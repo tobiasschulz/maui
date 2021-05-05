@@ -29,6 +29,19 @@ namespace Microsoft.Maui.DeviceTests
 				FlowDirection = flowDirection
 			};
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
+			Assert.Equal(view.AutomationId, id);
+		}
+
+		[Theory(DisplayName = "FlowDirection is set correctly")]
+		[InlineData(FlowDirection.LeftToRight)]
+		[InlineData(FlowDirection.RightToLeft)]
+		public async Task SetFlowDirection(FlowDirection flowDirection)
+		{
+			var view = new TStub
+			{
+				FlowDirection = flowDirection
+			};
+			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
 			Assert.Equal(view.FlowDirection, id);
 		}
 		
