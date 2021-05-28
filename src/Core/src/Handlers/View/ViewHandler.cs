@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Clip)] = MapClip,
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
-			[nameof(IView.BackgroundColor)] = MapBackgroundColor,
 			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
