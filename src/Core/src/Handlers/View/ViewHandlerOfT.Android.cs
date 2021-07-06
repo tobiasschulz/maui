@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (frame.Width < 0 || frame.Height < 0)
+			if (MauiContext == null || frame.Width < 0 || frame.Height < 0)
 			{
-				// This is a legacy layout value from Controls, nothing is actually laying out yet so we just ignore it
+				// This is just legacy layout stuff from Controls jumping the gun; we aren't ready to actually lay things out yet
 				return;
 			}
 
