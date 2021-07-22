@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Hosting
 {
 	public class AppHostBuilder : IAppHostBuilder
 	{
-		readonly Dictionary<Type, List<Action<HostBuilderContext, IMauiServiceBuilder>>> _configureServiceBuilderActions = new Dictionary<Type, List<Action<HostBuilderContext, IMauiServiceBuilder>>>();
-		readonly List<IMauiServiceBuilder> _configureServiceBuilderInstances = new List<IMauiServiceBuilder>();
 		readonly List<Action<IConfigurationBuilder>> _configureHostConfigActions = new List<Action<IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
 		readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<HostBuilderContext, IServiceCollection>>();
@@ -33,8 +31,6 @@ namespace Microsoft.Maui.Hosting
 
 		public AppHostBuilder()
 		{
-			// This is here just to make sure that the IMauiHandlersServiceProvider gets registered.
-			this.ConfigureMauiHandlers(handlers => { });
 		}
 
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
@@ -56,7 +52,6 @@ namespace Microsoft.Maui.Hosting
 			if (_services == null)
 				throw new InvalidOperationException("The ServiceCollection cannot be null");
 
-			BuildServiceCollections(_services);
 			BuildServices(_services);
 
 			_services.TryAddSingleton<ILoggerFactory, FallbackLoggerFactory>();
@@ -91,23 +86,6 @@ namespace Microsoft.Maui.Hosting
 		public IAppHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
 		{
 			_configureServicesActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
-			return this;
-		}
-
-		public IAppHostBuilder ConfigureServices<TBuilder>(Action<HostBuilderContext, TBuilder> configureDelegate)
-			where TBuilder : IMauiServiceBuilder, new()
-		{
-			_ = configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate));
-
-			var key = typeof(TBuilder);
-			if (!_configureServiceBuilderActions.TryGetValue(key, out var list))
-			{
-				list = new List<Action<HostBuilderContext, IMauiServiceBuilder>>();
-				_configureServiceBuilderActions.Add(key, list);
-			}
-
-			list.Add((context, builder) => configureDelegate(context, (TBuilder)builder));
-
 			return this;
 		}
 
@@ -207,28 +185,6 @@ namespace Microsoft.Maui.Hosting
 			return _serviceProviderFactory.CreateServiceProvider(containerBuilder);
 		}
 
-		void BuildServiceCollections(IServiceCollection? services)
-		{
-			if (services == null)
-				throw new ArgumentNullException(nameof(services));
-			if (_hostBuilderContext == null)
-				throw new InvalidOperationException($"The HostBuilderContext was not set.");
-
-			foreach (var pair in _configureServiceBuilderActions)
-			{
-				var instance = (IMauiServiceBuilder)Activator.CreateInstance(pair.Key)!;
-
-				foreach (var action in pair.Value)
-				{
-					action(_hostBuilderContext, instance);
-				}
-
-				instance.ConfigureServices(_hostBuilderContext, services);
-
-				_configureServiceBuilderInstances.Add(instance);
-			}
-		}
-
 		void ConfigureServiceCollectionBuilders(IServiceProvider? serviceProvider)
 		{
 			if (serviceProvider == null)
@@ -236,9 +192,13 @@ namespace Microsoft.Maui.Hosting
 			if (_hostBuilderContext == null)
 				throw new InvalidOperationException($"The HostBuilderContext was not set.");
 
-			foreach (var instance in _configureServiceBuilderInstances)
+			var initServices = serviceProvider.GetService<IEnumerable<IMauiInitializeService>>();
+			if (initServices != null)
 			{
-				instance.Configure(_hostBuilderContext, serviceProvider);
+				foreach (var instance in initServices)
+				{
+					instance.Initialize(_hostBuilderContext, serviceProvider);
+				}
 			}
 		}
 

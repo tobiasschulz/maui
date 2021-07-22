@@ -40,36 +40,93 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 
 namespace Microsoft.Maui.Controls.Hosting
 {
-	public static partial class AppHostBuilderExtensions
+	public static class MauiAppBuilderExtensions
 	{
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
+		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
 		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication, TApp>();
-			});
-
+			builder.Services.AddSingleton<IApplication, TApp>();
 			builder.SetupDefaults();
-
-			return builder;
-		}
-
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
-			where TApp : class, IApplication
-		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication>(implementationFactory);
-			});
-
-			builder.SetupDefaults();
-
 			return builder;
 		}
 
 
-		static IAppHostBuilder ConfigureImageSourceHandlers(this IAppHostBuilder builder)
+
+		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
+		{
+			builder.ConfigureLifecycleEvents(events =>
+			{
+#if __ANDROID__
+				events.AddAndroid(android => android
+					.OnApplicationCreating((app) =>
+					{
+						// This is the initial Init to set up any system services registered by
+						// Forms.Init(). This happens in the Application's OnCreate - before
+						// any UI has appeared.
+						// This creates a dummy MauiContext that wraps the Application.
+
+						var services = MauiApplication.Current.Services;
+						var mauiContext = new MauiContext(services!, app);
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+					})
+					.OnMauiContextCreated((mauiContext) =>
+					{
+						// This is the final Init that sets up the real context from the activity.
+
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state);
+					}));
+#elif __IOS__
+				events.AddiOS(iOS => iOS
+					.WillFinishLaunching((app, options) =>
+					{
+						// This is the initial Init to set up any system services registered by
+						// Forms.Init(). This happens before any UI has appeared.
+						// This creates a dummy MauiContext.
+
+						var services = MauiUIApplicationDelegate.Current.Services;
+						var mauiContext = new MauiContext(services);
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+						return true;
+					})
+					.OnMauiContextCreated((mauiContext) =>
+					{
+						// This is the final Init that sets up the real context from the application.
+
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state);
+					}));
+#elif WINDOWS
+				events.AddWindows(windows => windows
+					.OnLaunching((app, args) =>
+					{
+						// This is the initial Init to set up any system services registered by
+						// Forms.Init(). This happens before any UI has appeared.
+						// This creates a dummy MauiContext.
+						// We need to call this so the Window and Root Page can new up successfully
+						// The dispatcher that's inside of Forms.Init needs to be setup before the initial
+						// window and root page start creating.
+						// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
+						// MauiContext inside Forms
+
+						var services = MauiWinUIApplication.Current.Services;
+						var mauiContext = new MauiContext(services);
+						var state = new ActivationState(mauiContext, args);
+						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+					})
+					.OnMauiContextCreated((mauiContext) =>
+					{
+						// This is the final Init that sets up the real context from the application.
+
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state);
+					}));
+#endif
+			});
+
+		static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
 		{
 			builder.ConfigureImageSources(services =>
 			{
@@ -82,7 +139,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		static IAppHostBuilder SetupDefaults(this IAppHostBuilder builder)
+		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
 			builder.ConfigureCompatibilityLifecycleEvents();
 			builder.ConfigureImageSourceHandlers();
@@ -178,16 +235,30 @@ namespace Microsoft.Maui.Controls.Hosting
 
 					// Update the mappings for ILabel/Label to work specifically for Controls
 					Label.RemapForControls();
+				});
 
-				})
-				.ConfigureServices<MauiCompatBuilder>();
+			builder.AddMauiCompat();
 
 			return builder;
 		}
 
-		class MauiCompatBuilder : IMauiServiceBuilder
+		private static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
 		{
-			public void Configure(HostBuilderContext context, IServiceProvider services)
+#if __IOS__ || MACCATALYST
+			builder.Services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+#elif __ANDROID__
+			builder.Services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+#elif WINDOWS
+			builder.Services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+#endif
+
+			builder.Services.AddSingleton<IMauiInitializeService, MauiCompatInitializer>();
+			return builder;
+		}
+
+		class MauiCompatInitializer : IMauiInitializeService
+		{
+			public void Initialize(HostBuilderContext context, IServiceProvider services)
 			{
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 				CompatServiceProvider.SetServiceProvider(services);
@@ -212,17 +283,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					// Microsoft.Maui.Controls.Compatibility
 					AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
 				}
-#endif
-			}
-
-			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
-			{
-#if __IOS__ || MACCATALYST
-				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
-#elif __ANDROID__
-				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
-#elif WINDOWS
-				services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
 #endif
 			}
 

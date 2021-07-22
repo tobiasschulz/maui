@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Hosting
 			var builder = new AppHostBuilder();
 
 			builder.UseMicrosoftExtensionsServiceProviderFactory();
-			builder.ConfigureFonts();
-			builder.ConfigureImageSources();
-			builder.ConfigureAnimations();
-			builder.ConfigureCrossPlatformLifecycleEvents();
+			//builder.ConfigureFonts();
+			//builder.ConfigureImageSources();
+			//builder.ConfigureAnimations();
+			//builder.ConfigureCrossPlatformLifecycleEvents();
 
 			return builder;
 		}
