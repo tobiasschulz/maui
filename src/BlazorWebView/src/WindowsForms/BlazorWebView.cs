@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
@@ -15,10 +13,10 @@ using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
-    /// <summary>
-    /// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
-    /// </summary>
-    public class BlazorWebView : ContainerControl
+	/// <summary>
+	/// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
+	/// </summary>
+	public class BlazorWebView : ContainerControl
     {
         private readonly WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
@@ -31,27 +29,35 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         public BlazorWebView()
         {
             Dispatcher = new WindowsFormsDispatcher(this);
-            RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
+
+			RootComponents = new RootComponentsCollection(this);
+			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
             _webview = new WebView2Control()
             {
                 Dock = DockStyle.Fill,
             };
             ((BlazorWebViewControlCollection)Controls).AddInternal(_webview);
-        }
+		}
 
-        /// <summary>
-        /// Returns the inner <see cref="WebView2Control"/> used by this control.
-        /// </summary>
-        /// <remarks>
-        /// Directly using some functionality of the inner web view can cause unexpected results because its behavior
-        /// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
-        /// </remarks>
-        [Browsable(false)]
+		/// <summary>
+		/// Returns the inner <see cref="WebView2Control"/> used by this control.
+		/// </summary>
+		/// <remarks>
+		/// Directly using some functionality of the inner web view can cause unexpected results because its behavior
+		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
+		/// </remarks>
+		[Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public WebView2Control WebView => _webview;
 
-        private WindowsFormsDispatcher Dispatcher { get; }
+		/// <summary>
+		/// Returns the current <see cref="WebView2WebViewManager"/> used by this control. This property is <c>null</c>
+		/// until after the XYZ event is raised.
+		/// </summary>
+		public WebView2WebViewManager WebViewManager => _webviewManager;
+
+		private WindowsFormsDispatcher Dispatcher { get; }
 
         /// <inheritdoc />
         protected override void OnCreateControl()
@@ -77,8 +83,18 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
         }
 
-        // Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
-        private void ResetHostPage() => HostPage = null;
+		/// <summary>
+		/// Occurs when the <see cref="WebView2WebViewManager"/> is created.
+		/// </summary>
+		public event EventHandler<WebViewManagerCreatedEventArgs> WebViewManagerCreated;
+
+		protected virtual void OnWebViewManagerCreated(WebViewManagerCreatedEventArgs webViewManagerCreatedEventArgs)
+		{
+			WebViewManagerCreated?.Invoke(this, webViewManagerCreatedEventArgs);
+		}
+
+		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
+		private void ResetHostPage() => HostPage = null;
         private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
 
         /// <summary>
@@ -87,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         /// </summary>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ObservableCollection<RootComponent> RootComponents { get; } = new();
+        public RootComponentsCollection RootComponents { get; }
 
         /// <summary>
         /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
@@ -141,7 +157,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
             _webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, hostPageRelativePath);
-            foreach (var rootComponent in RootComponents)
+			OnWebViewManagerCreated(new WebViewManagerCreatedEventArgs(_webviewManager));
+			
+			foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously
                 _ = rootComponent.AddToWebViewManagerAsync(_webviewManager);

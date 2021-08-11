@@ -95,6 +95,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var mauiAssetFileProvider = new AndroidMauiAssetFileProvider(Context.Assets, contentRootDir);
 
 			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, mauiAssetFileProvider, hostPageRelativePath);
+			OnWebViewManagerCreated(new WebViewManagerCreatedEventArgs(_webviewManager));
+
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)
