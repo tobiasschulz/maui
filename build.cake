@@ -756,7 +756,7 @@ Task("Android100")
     });
 
 Task("VS")
-    .Description("Builds projects necessary so solution compiles on VS")
+    .Description("Builds projects necessary so solution compiles on VS Preview")
     .IsDependentOn("Clean")
     .IsDependentOn("VSMAC")
     .IsDependentOn("VSWINDOWS");
@@ -767,6 +767,17 @@ Task("VS-CG")
     .IsDependentOn("VSMAC")
     .IsDependentOn("VSWINDOWS");
 
+Task("VS-CG-STABLE")
+    .Description("Builds projects necessary so solution compiles on VS")
+    .IsDependentOn("Clean")
+    .IsDependentOn("VSMAC")
+    .IsDependentOn("VSWINDOWS");
+
+Task("VS-STABLE")
+    .Description("Builds projects necessary so solution compiles on VS Stable")
+    .IsDependentOn("Clean")
+    .IsDependentOn("VSMAC")
+    .IsDependentOn("VSWINDOWS");
 
 Task("VSWINDOWS")
     .Description("Builds projects necessary so solution compiles on VS Windows")
@@ -774,15 +785,22 @@ Task("VSWINDOWS")
     .WithCriteria(IsRunningOnWindows())
     .Does(() =>
     {
-        string sln = "Microsoft.Maui.sln";
-        if (target == "VS-CG")
-            sln = "Compatibility.ControlGallery.sln";
+        bool includePrerelease = !target.ToLower().Contains("stable");
 
-        MSBuild(sln,
+        if (target.ToLower().StartsWith("vs-cg"))
+        {
+            MSBuild("Compatibility.ControlGallery.sln",
                 GetMSBuildSettings()
                     .WithRestore());
-
-        StartVisualStudio(sln);
+            StartVisualStudio("Compatibility.ControlGallery.sln", includePrerelease: includePrerelease);
+        }
+        else
+        {
+            MSBuild(@"src\Compatibility\Core\src\Compatibility.csproj",
+                GetMSBuildSettings()
+                    .WithRestore());
+            StartVisualStudio("Microsoft.Maui.sln", includePrerelease: includePrerelease);
+        }
     });
 
 Task("VSMAC")
@@ -1054,20 +1072,18 @@ void RunTests(string unitTestLibrary, NUnit3Settings settings, ICakeContext ctx)
     }
 }
 
-void StartVisualStudio(string sln = "./Microsoft.Maui.sln")
+void StartVisualStudio(string sln = "./Microsoft.Maui.sln", bool includePrerelease = true)
 {
     if(isCIBuild)
         return;
 
     if(IsRunningOnWindows())
     {
-        StartProcess("powershell",
-            new ProcessSettings
-            {
-                Arguments = new ProcessArgumentBuilder()
-                    .Append("start")
-                    .Append(sln)
-            });
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+
+        StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     }
     else
          StartProcess("open", new ProcessSettings{ Arguments = sln });
