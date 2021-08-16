@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Hosting
 
 			public int IdePort { get; set; } = 9988;
 
-			public async void Initialize(HostBuilderContext context, IServiceProvider services)
+			public async void Initialize(IServiceProvider services)
 			{
 				var handlers = services.GetRequiredService<IMauiHandlersServiceProvider>();
 

@@ -12,16 +12,6 @@ namespace Microsoft.Maui.Essentials
 	{
 		public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<IEssentialsBuilder> configureDelegate = null)
 		{
-			if (configureDelegate == null)
-				builder.ConfigureEssentials((Action<HostBuilderContext, IEssentialsBuilder>)null);
-			else
-				builder.ConfigureEssentials((_, essentials) => configureDelegate(essentials));
-
-			return builder;
-		}
-
-		public static MauiAppBuilder ConfigureEssentials(this MauiAppBuilder builder, Action<HostBuilderContext, IEssentialsBuilder> configureDelegate = null)
-		{
 			if (configureDelegate != null)
 			{
 				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
@@ -77,16 +67,16 @@ namespace Microsoft.Maui.Essentials
 
 		internal class EssentialsRegistration
 		{
-			private readonly Action<HostBuilderContext, IEssentialsBuilder> _registerEssentials;
+			private readonly Action<IEssentialsBuilder> _registerEssentials;
 
-			public EssentialsRegistration(Action<HostBuilderContext, IEssentialsBuilder> registerEssentials)
+			public EssentialsRegistration(Action<IEssentialsBuilder> registerEssentials)
 			{
 				_registerEssentials = registerEssentials;
 			}
 
-			internal void RegisterEssentialsOptions(HostBuilderContext hostBuilderContext, IEssentialsBuilder essentials)
+			internal void RegisterEssentialsOptions(IEssentialsBuilder essentials)
 			{
-				_registerEssentials(hostBuilderContext, essentials);
+				_registerEssentials(essentials);
 			}
 		}
 
@@ -100,14 +90,14 @@ namespace Microsoft.Maui.Essentials
 				_essentialsRegistrations = essentialsRegistrations;
 			}
 
-			public async void Initialize(HostBuilderContext context, IServiceProvider services)
+			public async void Initialize(IServiceProvider services)
 			{
 				_essentialsBuilder = new EssentialsBuilder();
 				if (_essentialsRegistrations != null)
 				{
 					foreach (var essentialsRegistration in _essentialsRegistrations)
 					{
-						essentialsRegistration.RegisterEssentialsOptions(context, _essentialsBuilder);
+						essentialsRegistration.RegisterEssentialsOptions(_essentialsBuilder);
 					}
 				}
 

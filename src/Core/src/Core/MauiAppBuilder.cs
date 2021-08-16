@@ -1,260 +1,160 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Hosting.Internal;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// A builder for .NET MAUI cross-platform applications and services.
+	/// </summary>
 	public sealed class MauiAppBuilder
 	{
-		private MauiAppBuilder()
+		private readonly HostBuilder _hostBuilder = new();
+		private readonly BootstrapHostBuilder _bootstrapHostBuilder;
+		private readonly MauiApplicationServiceCollection _services = new();
+
+		private MauiApp? _builtApplication;
+
+		internal MauiAppBuilder(bool useDefaults = true)
 		{
-			// Register required services
-			ConfigureMauiHandlers(configureDelegate: null);
+			Services = _services;
 
-			ConfigureFonts();
-			ConfigureImageSources();
-			//ConfigureAnimations();
-			this.ConfigureCrossPlatformLifecycleEvents();
+			// Run methods to configure both generic and web host defaults early to populate config from appsettings.json
+			// environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
+			// the correct defaults.
+			_bootstrapHostBuilder = new BootstrapHostBuilder(Services, _hostBuilder.Properties);
+
+			// Don't specify the args here since we want to apply them later so that args
+			// can override the defaults specified by ConfigureWebHostDefaults
+			_bootstrapHostBuilder.ConfigureDefaults(args: null);
+
+			_bootstrapHostBuilder.ConfigureHostConfiguration(config =>
+			{
+				// TODO: This has no more code left. Delete?
+			});
+
+			Configuration = new();
+
+			// This is the application configuration
+			var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
+
+			Logging = new LoggingBuilder(Services);
+			Host = new ConfigureHostBuilder(hostContext, Configuration, Services);
+
+			if (useDefaults)
+			{
+				// Register required services
+				this.ConfigureMauiHandlers(configureDelegate: null);
+
+				this.ConfigureFonts();
+				this.ConfigureImageSources();
+				//ConfigureAnimations();
+				this.ConfigureCrossPlatformLifecycleEvents();
+			}
 		}
-
-		public static MauiAppBuilder CreateBuilder() => new();
 
 		/// <summary>
 		/// A collection of services for the application to compose. This is useful for adding user provided or framework provided services.
 		/// </summary>
-		public IServiceCollection Services { get; } = new ServiceCollection();
+		public IServiceCollection Services { get; }
 
-		public MauiAppBuilder ConfigureMauiHandlers(Action<IMauiHandlersCollection>? configureDelegate)
+		/// <summary>
+		/// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
+		/// </summary>
+		public ConfigurationManager Configuration { get; }
+
+		/// <summary>
+		/// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
+		/// </summary>
+		public ILoggingBuilder Logging { get; }
+
+		/// <summary>
+		/// An <see cref="IHostBuilder"/> for configuring host specific properties, but not building.
+		/// To build after configuration, call <see cref="Build"/>.
+		/// </summary>
+		public ConfigureHostBuilder Host { get; }
+
+		/// <summary>
+		/// Builds the <see cref="MauiApp"/>.
+		/// </summary>
+		/// <returns>A configured <see cref="MauiApp"/>.</returns>
+		public MauiApp Build()
 		{
-			Services.TryAddSingleton<IMauiHandlersServiceProvider, MauiHandlersServiceProvider>();
-			if (configureDelegate != null)
+			// Copy the configuration sources into the final IConfigurationBuilder
+			_hostBuilder.ConfigureHostConfiguration(builder =>
 			{
-				Services.AddSingleton<HandlerRegistration>(new HandlerRegistration(configureDelegate));
-			}
-			return this;
-		}
-
-		public MauiAppBuilder ConfigureFonts()
-		{
-			ConfigureFonts(configureDelegate: null);
-			return this;
-		}
-
-		public MauiAppBuilder ConfigureFonts(Action<IFontCollection>? configureDelegate)
-		{
-			Services.TryAddSingleton<IEmbeddedFontLoader>(svc => new EmbeddedFontLoader(svc.CreateLogger<EmbeddedFontLoader>()));
-			Services.TryAddSingleton<IFontRegistrar>(svc => new FontRegistrar(svc.GetRequiredService<IEmbeddedFontLoader>(), svc.CreateLogger<FontRegistrar>()));
-			Services.TryAddSingleton<IFontManager>(svc => new FontManager(svc.GetRequiredService<IFontRegistrar>(), svc.CreateLogger<FontManager>()));
-			if (configureDelegate != null)
-			{
-				Services.AddSingleton<FontsRegistration>(new FontsRegistration(configureDelegate));
-			}
-			Services.AddSingleton<IMauiInitializeService, FontInitializer>();
-			return this;
-		}
-
-
-		internal class FontsRegistration
-		{
-			private readonly Action<IFontCollection> _registerFonts;
-
-			public FontsRegistration(Action<IFontCollection> registerFonts)
-			{
-				_registerFonts = registerFonts;
-			}
-
-			internal void AddFonts(IFontCollection fonts)
-			{
-				_registerFonts(fonts);
-			}
-		}
-
-		internal class FontInitializer : IMauiInitializeService
-		{
-			private readonly IEnumerable<FontsRegistration> _fontsRegistrations;
-			readonly IFontRegistrar _fontRegistrar;
-
-			public FontInitializer(IEnumerable<FontsRegistration> fontsRegistrations, IFontRegistrar fontRegistrar)
-			{
-				_fontsRegistrations = fontsRegistrations;
-				_fontRegistrar = fontRegistrar;
-			}
-
-			public void Initialize(HostBuilderContext _, IServiceProvider __)
-			{
-				if (_fontsRegistrations != null)
+				foreach (var source in ((IConfigurationBuilder)Configuration).Sources)
 				{
-					var fontsBuilder = new FontCollection();
-
-					// Run all the user-defined registrations
-					foreach (var font in _fontsRegistrations)
-					{
-						font.AddFonts(fontsBuilder);
-					}
-
-					// Register the fonts in the registrar
-					foreach (var font in fontsBuilder)
-					{
-						if (font.Assembly == null)
-							_fontRegistrar.Register(font.Filename, font.Alias);
-						else
-							_fontRegistrar.Register(font.Filename, font.Alias, font.Assembly);
-					}
+					builder.Sources.Add(source);
 				}
-			}
-		}
 
-		readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppConfigActions = new List<Action<HostBuilderContext, IConfigurationBuilder>>();
-		readonly List<Action<IConfigurationBuilder>> _configureHostConfigActions = new List<Action<IConfigurationBuilder>>();
-
-		public MauiAppBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
-		{
-			_configureAppConfigActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
-			return this;
-		}
-
-		public MauiAppBuilder ConfigureAppConfiguration(Action<IConfigurationBuilder> configureDelegate)
-		{
-			ConfigureAppConfiguration((_, config) => configureDelegate(config));
-			return this;
-		}
-
-		public MauiAppBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
-		{
-			_configureHostConfigActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
-			return this;
-		}
-
-		public MauiAppBuilder ConfigureImageSources()
-		{
-			ConfigureImageSources(services =>
-			{
-				services.AddService<IFileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
-				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
-				services.AddService<IStreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
-				services.AddService<IUriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+				foreach (var kvp in ((IConfigurationBuilder)Configuration).Properties)
+				{
+					builder.Properties[kvp.Key] = kvp.Value;
+				}
 			});
-			return this;
-		}
 
-		public MauiAppBuilder ConfigureImageSources(Action<IImageSourceServiceCollection>? configureDelegate)
-		{
-			if (configureDelegate != null)
+			// This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
+			// Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
+			_hostBuilder.ConfigureServices((context, services) =>
 			{
-				Services.AddSingleton<ImageSourceRegistration>(new ImageSourceRegistration(configureDelegate));
-			}
-
-			Services.AddSingleton<IImageSourceServiceConfiguration, ImageSourceServiceConfiguration>();
-			Services.AddSingleton<IImageSourceServiceProvider>(svcs => new ImageSourceServiceProvider(svcs.GetRequiredService<IImageSourceServiceCollection>(), svcs));
-			Services.AddSingleton<IImageSourceServiceCollection, ImageSourceServiceBuilder>();
-
-			return this;
-		}
-
-		class ImageSourceRegistration
-		{
-			private readonly Action<IImageSourceServiceCollection> _registerAction;
-
-			public ImageSourceRegistration(Action<IImageSourceServiceCollection> registerAction)
-			{
-				_registerAction = registerAction;
-			}
-
-			internal void AddRegistration(IImageSourceServiceCollection builder)
-			{
-				_registerAction(builder);
-			}
-		}
-
-		class ImageSourceServiceBuilder : MauiServiceCollection, IImageSourceServiceCollection
-		{
-			public ImageSourceServiceBuilder(IEnumerable<ImageSourceRegistration> registrationActions)
-			{
-				if (registrationActions != null)
+				// We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
+				// at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
+				// until now, so we cannot clear these services even though some are redundant because
+				// we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
+				foreach (var s in _services)
 				{
-					foreach (var effectRegistration in registrationActions)
-					{
-						effectRegistration.AddRegistration(this);
-					}
+					services.Add(s);
 				}
-			}
-		}
 
-		internal class HandlerRegistration
-		{
-			private readonly Action<IMauiHandlersCollection> _registerAction;
+				// Add any services to the user visible service collection so that they are observable
+				// just in case users capture the Services property. Orchard does this to get a "blueprint"
+				// of the service collection
 
-			public HandlerRegistration(Action<IMauiHandlersCollection> registerAction)
-			{
-				_registerAction = registerAction;
-			}
+				// Drop the reference to the existing collection and set the inner collection
+				// to the new one. This allows code that has references to the service collection to still function.
+				_services.InnerCollection = services;
+			});
 
-			internal void AddRegistration(IMauiHandlersCollection builder)
-			{
-				_registerAction(builder);
-			}
-		}
+			// Run the other callbacks on the final host builder
+			Host.RunDeferredCallbacks(_hostBuilder);
 
-		public IServiceProvider Build()
-		{
-			// AppConfig
-			BuildHostConfiguration();
-			BuildAppConfiguration();
-			if (_appConfiguration != null)
-				Services.AddSingleton(_appConfiguration);
+			_builtApplication = new MauiApp(_hostBuilder.Build());
 
-			// ConfigureServices
-			var properties = new Dictionary<object, object>();
-			var builderContext = new HostBuilderContext(properties); // TODO: Should get this from somewhere...
+			// Make builder.Configuration match the final configuration. To do that
+			// we clear the sources and add the built configuration as a source
+			((IConfigurationBuilder)Configuration).Sources.Clear();
+			Configuration.AddConfiguration(_builtApplication.Configuration);
 
-			var serviceProvider = Services.BuildServiceProvider();
+			// Mark the service collection as read-only to prevent future modifications
+			_services.IsReadOnly = true;
 
-			var initServices = serviceProvider.GetService<IEnumerable<IMauiInitializeService>>();
+
+			var initServices = _builtApplication.Services.GetService<IEnumerable<IMauiInitializeService>>();
 			if (initServices != null)
 			{
 				foreach (var instance in initServices)
 				{
-					instance.Initialize(builderContext, serviceProvider);
+					instance.Initialize(_builtApplication.Services);
 				}
 			}
 
-			return serviceProvider;
+
+			return _builtApplication;
 		}
 
-		IConfiguration? _hostConfiguration;
-		IConfiguration? _appConfiguration;
-
-		void BuildHostConfiguration()
+		private class LoggingBuilder : ILoggingBuilder
 		{
-			var configBuilder = new ConfigurationBuilder();
-			foreach (var buildAction in _configureHostConfigActions)
+			public LoggingBuilder(IServiceCollection services)
 			{
-				buildAction(configBuilder);
+				Services = services;
 			}
-			_hostConfiguration = configBuilder.Build();
-		}
 
-		void BuildAppConfiguration()
-		{
-			var properties = new Dictionary<object, object>();
-			var builderContext = new HostBuilderContext(properties); // TODO: Should get this from somewhere...
-
-			var configBuilder = new ConfigurationBuilder();
-			configBuilder.AddConfiguration(_hostConfiguration);
-			foreach (var buildAction in _configureAppConfigActions)
-			{
-				buildAction(builderContext, configBuilder);
-			}
-			_appConfiguration = configBuilder.Build();
-
-			builderContext.Configuration = _appConfiguration;
+			public IServiceCollection Services { get; }
 		}
 	}
 }

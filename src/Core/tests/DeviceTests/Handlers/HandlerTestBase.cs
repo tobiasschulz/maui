@@ -13,23 +13,23 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;
-		IAppHost _host;
+		IServiceProvider _servicesProvider;
 		IMauiContext _context;
 
 		public HandlerTestBase()
 		{
-			var appBuilder = AppHost
-				.CreateDefaultBuilder()
+			var appBuilder = MauiAppBuilder
+				.CreateBuilder()
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
 					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
 				})
-				.ConfigureImageSources((ctx, services) =>
+				.ConfigureImageSources(services =>
 				{
 					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
 				})
-				.ConfigureFonts((ctx, fonts) =>
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
 					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
@@ -38,17 +38,16 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
-			_host = appBuilder.Build();
+			_servicesProvider = appBuilder.Build();
 
 			_app = new ApplicationStub();
 
-			_context = new ContextStub(_host.Services);
+			_context = new ContextStub(_servicesProvider);
 		}
 
 		public void Dispose()
 		{
-			_host.Dispose();
-			_host = null;
+			_servicesProvider = null;
 			_app = null;
 			_context = null;
 		}

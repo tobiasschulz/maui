@@ -47,7 +47,7 @@ namespace Maui.Controls.Sample.Controls
 			_borderlessEntryRegistrations = borderlessEntryRegistrations;
 		}
 
-		public void Initialize(HostBuilderContext context, IServiceProvider services)
+		public void Initialize(IServiceProvider services)
 		{
 			var essentialsBuilder = new BordelessEntryServiceBuilder();
 			if (_borderlessEntryRegistrations != null)

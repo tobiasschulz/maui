@@ -10,6 +10,7 @@
     <MicrosoftmacOSSdkPackageVersion>12.0.100-rc.1.507</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-rc.1.21415.6</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>6.0.0-rc.1.21415.6</MicrosoftExtensionsHostingPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0-rc.1.21415.6</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0-rc.1.21415.6</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.0-rc.1.21415.6</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>

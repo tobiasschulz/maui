@@ -50,7 +50,13 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-
+		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+			where TApp : class, IApplication
+		{
+			builder.Services.AddSingleton<IApplication>(implementationFactory);
+			builder.SetupDefaults();
+			return builder;
+		}
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
@@ -126,21 +132,6 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 			});
 
-		static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
-		{
-			builder.ConfigureImageSources(services =>
-			{
-				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
-				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
-				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
-				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
-			});
-
-			return builder;
-		}
-
-		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
-		{
 			builder.ConfigureCompatibilityLifecycleEvents();
 			builder.ConfigureImageSourceHandlers();
 			builder
@@ -242,6 +233,19 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
+		static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
+		{
+			builder.ConfigureImageSources(services =>
+			{
+				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
+				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
+				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+			});
+
+			return builder;
+		}
+
 		private static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
 		{
 #if __IOS__ || MACCATALYST
@@ -258,7 +262,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		class MauiCompatInitializer : IMauiInitializeService
 		{
-			public void Initialize(HostBuilderContext context, IServiceProvider services)
+			public void Initialize(IServiceProvider services)
 			{
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 				CompatServiceProvider.SetServiceProvider(services);

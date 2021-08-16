@@ -31,7 +31,7 @@ namespace Maui.Controls.Sample
 
 		public static MauiAppBuilder CreateAppBuilder()
 		{
-			var appBuilder = MauiAppBuilder.CreateBuilder();
+			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.UseMauiApp<XamlApp>();
 			var services = appBuilder.Services;
@@ -62,16 +62,14 @@ namespace Maui.Controls.Sample
 			appBuilder.EnableHotReload();
 #endif
 
-			appBuilder.ConfigureAppConfiguration(config =>
-			{
-				config.AddInMemoryCollection(new Dictionary<string, string>
+			appBuilder.Configuration.AddInMemoryCollection(
+				new Dictionary<string, string>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-			});
 
 #if NET6_0_OR_GREATER
 			appBuilder

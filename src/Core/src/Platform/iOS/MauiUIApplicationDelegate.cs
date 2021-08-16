@@ -40,9 +40,9 @@ namespace Microsoft.Maui
 			//	.ConfigureUsing(startup)
 			//	.Build();
 
-			var services = builder.FinalizeInternals();
+			var mauiApp = builder.Build();
 
-			Services = services;
+			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 

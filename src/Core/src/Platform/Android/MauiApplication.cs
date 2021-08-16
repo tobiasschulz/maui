@@ -34,9 +34,9 @@ namespace Microsoft.Maui
 			//	.ConfigureUsing(startup)
 			//	.Build();
 
-			var services = builder.FinalizeInternals();
+			var mauiApp = builder.Build();
 
-			Services = services;
+			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 

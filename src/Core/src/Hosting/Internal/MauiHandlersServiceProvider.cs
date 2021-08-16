@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider
 	{
-		public MauiHandlersServiceProvider(IEnumerable<MauiAppBuilder.HandlerRegistration> registrationActions) :
+		public MauiHandlersServiceProvider(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions) :
 			base(CreateHandlerCollection(registrationActions), constructorInjection: false)
 		{
 		}
 
-		private static IMauiServiceCollection CreateHandlerCollection(IEnumerable<MauiAppBuilder.HandlerRegistration> registrationActions)
+		private static IMauiServiceCollection CreateHandlerCollection(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions)
 		{
 			var collection = new MauiHandlersCollection();
 			if (registrationActions != null)

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		public static MauiAppBuilder CreateAppBuilder()
 		{
-			var builder = MauiAppBuilder.CreateBuilder();
+			var builder = MauiApp.CreateBuilder();
 			builder
 				.UseMauiApp<App>()
 				.ConfigureMauiHandlers(handlers =>

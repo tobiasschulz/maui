@@ -13,12 +13,12 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[InlineData(typeof(FileImageSourceStub))]
 		public void CanRetrieveFileUsingInterfaceImageSource(Type type)
 		{
-			var builder = MauiAppBuilder
+			var builder = MauiApp
 				.CreateBuilder()
 				.ConfigureImageSources();
-			var services = builder.Build();
+			var mauiApp = builder.Build();
 
-			var images = services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			Assert.NotNull(images);
 
 			var imageSourceService = images.GetRequiredImageSourceService(type);
@@ -29,16 +29,16 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void CanRetrieveFontUsingInterfaceImageSource()
 		{
-			var builder = MauiAppBuilder
+			var builder = MauiApp
 				.CreateBuilder()
 				.ConfigureFonts()
 				.ConfigureImageSources();
-			var services = builder.Build();
+			var mauiApp = builder.Build();
 
-			var manager = services.GetRequiredService<IFontManager>();
+			var manager = mauiApp.Services.GetRequiredService<IFontManager>();
 			Assert.NotNull(manager);
 
-			var images = services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			Assert.NotNull(images);
 
 			var imageSourceService = images.GetRequiredImageSourceService<IFontImageSource>();
@@ -51,16 +51,16 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void CanRetrieveFontUsingConcreteImageSource()
 		{
-			var builder = MauiAppBuilder
+			var builder = MauiApp
 				.CreateBuilder()
 				.ConfigureFonts()
 				.ConfigureImageSources();
-			var services = builder.Build();
+			var mauiApp = builder.Build();
 
-			var manager = services.GetRequiredService<IFontManager>();
+			var manager = mauiApp.Services.GetRequiredService<IFontManager>();
 			Assert.NotNull(manager);
 
-			var images = services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			Assert.NotNull(images);
 
 			var imageSourceService = images.GetRequiredImageSourceService<FontImageSourceStub>();

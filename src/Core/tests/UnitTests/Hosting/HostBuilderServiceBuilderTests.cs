@@ -16,12 +16,12 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void MultipleServicesAreRegisteredWithoutBuilder()
 		{
-			var builder = MauiAppBuilder.CreateBuilder();
+			var builder = MauiApp.CreateBuilder();
 			builder.Services.AddSingleton(new MappingService("key 1", "value 1"));
 			builder.Services.AddSingleton(new MappingService("key 2", "value 2"));
-			var services = builder.Build();
+			var mauiApp = builder.Build();
 
-			var mappingServices = services.GetServices<MappingService>().ToArray();
+			var mappingServices = mauiApp.Services.GetServices<MappingService>().ToArray();
 
 			Assert.Equal(2, mappingServices.Length);
 			Assert.NotEqual(mappingServices[0], mappingServices[1]);
@@ -41,7 +41,8 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void AppConfigurationReachesBuilder()
 		{
-			var builder = MauiAppBuilder.CreateBuilder()
+			var builder = MauiApp.CreateBuilder();
+			builder.Host
 				.ConfigureAppConfiguration((_, builder) =>
 				{
 					builder.AddInMemoryCollection(new Dictionary<string, string>
@@ -49,9 +50,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 						{ "key 1", "value 1" },
 					});
 				});
-			// TODO: Check app configuration values here
+			// TODO: CHECK THIS!
 			//var appConfigValue = builder.AppConfig["key 1"];
-			var host = builder.Build();
+			var mauiApp = builder.Build();
 
 			//Assert.Equal("value 1", appConfigValue);
 		}
