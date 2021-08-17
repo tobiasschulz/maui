@@ -48,12 +48,25 @@ namespace Microsoft.Maui
 
 			if (holder is RvItemHolder itemHolder)
 			{
-				var newView = positionalViewSelector.ViewSelector.ViewFor(info.Kind, info.SectionIndex, info.ItemIndex);
+				var data = info.Kind switch {
+					PositionKind.Item =>
+						positionalViewSelector?.Adapter?.Item(info.SectionIndex, info.ItemIndex),
+					PositionKind.SectionHeader =>
+						positionalViewSelector?.Adapter?.Section(info.SectionIndex),
+					PositionKind.SectionFooter =>
+						positionalViewSelector?.Adapter?.Section(info.SectionIndex),
+					_ => null
+				};
 
-				if (newView is IPositionInfo newViewWithPositionInfo)
-					newViewWithPositionInfo.SetPositionInfo(info);
+				if (!itemHolder.HasView)
+				{
+					var view = positionalViewSelector?.ViewSelector?.CreateView(info.Kind, data, info.SectionIndex, info.ItemIndex);
+					itemHolder.SwapView(view);
+				}
 
-				itemHolder.Update(info, newView);
+				itemHolder.Update(info);
+
+				positionalViewSelector?.ViewSelector?.RecycleView(info.Kind, data, itemHolder.ViewContainer.VirtualView, info.SectionIndex, info.ItemIndex);
 			}
 		}
 
@@ -64,7 +77,18 @@ namespace Microsoft.Maui
 			base.GetItemViewType(position);
 
 			var info = positionalViewSelector.GetInfo(position);
-			var reuseId = positionalViewSelector.ViewSelector.GetReuseId(info.Kind, info.SectionIndex, info.ItemIndex);
+
+			var data = info.Kind switch {
+				PositionKind.Item =>
+					positionalViewSelector?.Adapter?.Item(info.SectionIndex, info.ItemIndex),
+				PositionKind.SectionHeader =>
+					positionalViewSelector?.Adapter?.Section(info.SectionIndex),
+				PositionKind.SectionFooter =>
+					positionalViewSelector?.Adapter?.Section(info.SectionIndex),
+				_ => null
+			};
+
+			var reuseId = positionalViewSelector.ViewSelector.GetReuseId(info.Kind, data, info.SectionIndex, info.ItemIndex);
 
 			int vt = -1;
 
