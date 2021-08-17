@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Views;
 using Android.Widget;
 
 namespace Microsoft.Maui
@@ -75,6 +76,21 @@ namespace Microsoft.Maui
 					imageView.SetImageDrawable(drawable);
 
 					imageView.UpdateIsAnimationPlaying(image);
+
+					// HACK CODE TO FORCE RELAYOUT OF PARENT LAYOUT
+
+					var parent = imageView.Parent;
+
+					while (parent != null && parent is not ViewGroup)
+					{
+						parent = parent.Parent;
+					}
+
+					if (parent is View vg)
+					{
+						vg.Measure(MeasureSpecMode.Exactly.MakeMeasureSpec(vg.MeasuredWidth), MeasureSpecMode.Exactly.MakeMeasureSpec(vg.MeasuredHeight));
+						vg.Layout(vg.Left, vg.Top, vg.Right, vg.Bottom);
+					}
 				}
 
 				events?.LoadingCompleted(applied);
