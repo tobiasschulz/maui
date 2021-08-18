@@ -26,6 +26,7 @@ namespace Maui.Controls.Sample.Pages.Base
 		protected override void OnAppearing()
 		{
 			Debug.WriteLine($"OnAppearing: {this}");
+			this.FlowDirection = XamlApp.GlobalFlowDirection;
 		}
 
 		protected override void OnDisappearing()
