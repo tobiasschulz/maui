@@ -82,17 +82,7 @@ namespace Microsoft.Maui
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(view.Background);
 		}
-
-		// TODO ezhart Do we need all three of these? 
-		public static void UpdateBackgroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
-
-		public static void UpdateBackgroundColor(this Border nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
-
-		public static void UpdateBackgroundColor(this Panel nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
-
+		
 		public static void UpdateFlowDirection(this FrameworkElement nativeView, IView view)
 		{
 			if (view.FlowDirection.IsRightToLeft())
