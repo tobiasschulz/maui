@@ -93,24 +93,6 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateFlowDirection(this AView nativeView, IView view)
-		{
-			if (view.FlowDirection.IsRightToLeft())
-			{
-				nativeView.LayoutDirection = ALayoutDirection.Rtl;
-
-				if (nativeView is TextView textView)
-					textView.TextDirection = ATextDirection.Rtl;
-			}
-			else if (view.FlowDirection.IsLeftToRight())
-			{
-				nativeView.LayoutDirection = ALayoutDirection.Ltr;
-
-				if (nativeView is TextView textView)
-					textView.TextDirection = ATextDirection.Ltr;
-			}
-		}
-
 		public static bool GetClipToOutline(this AView view)
 		{
 			return view.ClipToOutline;
