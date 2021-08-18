@@ -54,7 +54,6 @@
         <ToolbarItem
             IconImageSource="settings.png"
             Text="Settings" />
-        <ToolbarItem Text="LTR" Clicked="OnToolbarItemClicked"></ToolbarItem>
     </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid

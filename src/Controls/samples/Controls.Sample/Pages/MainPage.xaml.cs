@@ -12,15 +12,5 @@ namespace Maui.Controls.Sample.Pages
 
 			BindingContext = viewModel;
 		}
-
-		private void OnToolbarItemClicked(object sender, EventArgs e)
-		{
-			if (FlowDirection != FlowDirection.RightToLeft)
-				FlowDirection = FlowDirection.RightToLeft;
-			else
-				FlowDirection = FlowDirection.LeftToRight;
-
-			XamlApp.GlobalFlowDirection = FlowDirection;
-		}
 	}
 }

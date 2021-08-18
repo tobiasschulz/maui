@@ -21,12 +21,25 @@ namespace Maui.Controls.Sample.Pages.Base
 					SelectedItem = null;
 				}
 			});
+
+			ToolbarItems.Add(new ToolbarItem()
+			{
+				Text = "RTL",
+				Command = new Command(OnToolbarItemClicked)
+			});
+		}
+
+		private void OnToolbarItemClicked()
+		{
+			if (FlowDirection != FlowDirection.RightToLeft)
+				FlowDirection = FlowDirection.RightToLeft;
+			else
+				FlowDirection = FlowDirection.LeftToRight;
 		}
 
 		protected override void OnAppearing()
 		{
 			Debug.WriteLine($"OnAppearing: {this}");
-			this.FlowDirection = XamlApp.GlobalFlowDirection;
 		}
 
 		protected override void OnDisappearing()
