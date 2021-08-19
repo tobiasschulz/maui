@@ -272,17 +272,17 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TriggersProperty = TriggersPropertyKey.BindableProperty;
 
 
-		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create("WidthRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create(nameof(WidthRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create("HeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create(nameof(HeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty MinimumWidthRequestProperty = BindableProperty.Create("MinimumWidthRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty MinimumWidthRequestProperty = BindableProperty.Create(nameof(MinimumWidthRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create("MinimumHeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create(nameof(MinimumHeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty MaximumWidthRequestProperty = BindableProperty.Create("MaximumWidthRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty MaximumWidthRequestProperty = BindableProperty.Create(nameof(MaximumWidthRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create("MaximumHeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create(nameof(MaximumHeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused",
@@ -441,8 +441,8 @@ namespace Microsoft.Maui.Controls
 
 		public double MaximumHeightRequest
 		{
-			get { return (double)GetValue(MinimumHeightRequestProperty); }
-			set { SetValue(MinimumHeightRequestProperty, value); }
+			get { return (double)GetValue(MaximumHeightRequestProperty); }
+			set { SetValue(MaximumHeightRequestProperty, value); }
 		}
 
 		public double MaximumWidthRequest
