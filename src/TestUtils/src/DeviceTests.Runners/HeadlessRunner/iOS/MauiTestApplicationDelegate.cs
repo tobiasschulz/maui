@@ -37,8 +37,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var builder = CreateAppBuilder();
-			var services = builder.Build();
-			Services = services;
+			var mauiApp = builder.Build();
+			Services = mauiApp.Services;
 
 			Options = Services.GetRequiredService<TestOptions>();
 			RunnerOptions = Services.GetRequiredService<HeadlessRunnerOptions>();
