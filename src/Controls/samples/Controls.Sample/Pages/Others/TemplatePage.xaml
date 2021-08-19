@@ -31,13 +31,15 @@
                 Grid.Row="0"
                 SemanticProperties.HeadingLevel="Level1"
                 FontSize="32"
-                HorizontalOptions="CenterAndExpand" />
+                BackgroundColor="LightGreen"
+                   MinimumWidthRequest="150" MinimumHeightRequest="250"
+                HorizontalOptions="Center" />
 
             <Label Text="Welcome to .NET Multi-platform App UI"
                 Grid.Row="1"
                 SemanticProperties.Hint="Counts the number of times you click"
                 FontSize="16"
-                HorizontalOptions="CenterAndExpand" />
+                HorizontalOptions="Center" MaximumWidthRequest="20" MaximumHeightRequest="20" BackgroundColor="LightBlue" />
 
             <Label Text="Current count: 0"
                 Grid.Row="2"

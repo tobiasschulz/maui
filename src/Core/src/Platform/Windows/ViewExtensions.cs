@@ -128,5 +128,25 @@ namespace Microsoft.Maui
 			// WinUI uses NaN for "unspecified"
 			nativeView.Height = view.Height >= 0 ? view.Height : double.NaN;
 		}
+
+		public static void UpdateMinimumHeight(this FrameworkElement nativeView, IView view)
+		{
+			// TODO ezhart
+		}
+
+		public static void UpdateMinimumWidth(this FrameworkElement nativeView, IView view)
+		{
+			// TODO ezhart
+		}
+
+		public static void UpdateMaximumHeight(this FrameworkElement nativeView, IView view)
+		{
+			// TODO ezhart
+		}
+
+		public static void UpdateMaximumWidth(this FrameworkElement nativeView, IView view)
+		{
+			// TODO ezhart
+		}
 	}
 }

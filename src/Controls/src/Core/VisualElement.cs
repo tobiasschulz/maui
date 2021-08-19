@@ -280,6 +280,10 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create("MinimumHeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
+		public static readonly BindableProperty MaximumWidthRequestProperty = BindableProperty.Create("MaximumWidthRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+
+		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create("MaximumHeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused",
 			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
@@ -433,6 +437,18 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (double)GetValue(MinimumWidthRequestProperty); }
 			set { SetValue(MinimumWidthRequestProperty, value); }
+		}
+
+		public double MaximumHeightRequest
+		{
+			get { return (double)GetValue(MinimumHeightRequestProperty); }
+			set { SetValue(MinimumHeightRequestProperty, value); }
+		}
+
+		public double MaximumWidthRequest
+		{
+			get { return (double)GetValue(MaximumWidthRequestProperty); }
+			set { SetValue(MaximumWidthRequestProperty, value); }
 		}
 
 		public double Opacity
@@ -1037,6 +1053,10 @@ namespace Microsoft.Maui.Controls
 			{
 				fe.Handler?.UpdateValue(nameof(IView.Width));
 				fe.Handler?.UpdateValue(nameof(IView.Height));
+				fe.Handler?.UpdateValue(nameof(IView.MinimumHeight));
+				fe.Handler?.UpdateValue(nameof(IView.MinimumWidth));
+				fe.Handler?.UpdateValue(nameof(IView.MaximumHeight));
+				fe.Handler?.UpdateValue(nameof(IView.MaximumWidth));
 			}
 
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);

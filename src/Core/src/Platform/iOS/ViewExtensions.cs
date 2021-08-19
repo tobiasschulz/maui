@@ -167,6 +167,26 @@ namespace Microsoft.Maui
 			UpdateFrame(nativeView, view);
 		}
 
+		public static void UpdateMinimumHeight(this UIView nativeView, IView view)
+		{
+			// TODO ezhart
+		}
+
+		public static void UpdateMaximumHeight(this UIView nativeView, IView view)
+		{
+			// TODO ezhart
+		}
+
+		public static void UpdateMinimumWidth(this UIView nativeView, IView view)
+		{
+			// TODO ezhart
+		}
+
+		public static void UpdateMaximumWidth(this UIView nativeView, IView view)
+		{
+			// TODO ezhart
+		}
+
 		public static void UpdateFrame(UIView nativeView, IView view)
 		{
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
