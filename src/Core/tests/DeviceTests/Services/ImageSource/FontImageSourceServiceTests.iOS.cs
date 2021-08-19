@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GetImageAsyncWithCustomFont()
 		{
-			var services = MauiAppBuilder.CreateBuilder()
+			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureImageSources()
 				.Build();
 
-			var images = services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
 
 			var imageSource = new FontImageSourceStub
