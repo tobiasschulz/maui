@@ -28,6 +28,13 @@ namespace Microsoft.Maui
 			// the correct defaults.
 			_bootstrapHostBuilder = new BootstrapHostBuilder(Services, _hostBuilder.Properties);
 
+			_bootstrapHostBuilder.ConfigureHostConfiguration(config =>
+			{
+				// Disable reloading config on change so we don't use up system file watchers, which are a limited resource
+				// https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0#disable-app-configuration-reload-on-change
+				config.AddInMemoryCollection(new Dictionary<string, string> { { "hostBuilder:reloadConfigOnChange", "false" } });
+			});
+
 			// Don't specify the args here since we want to apply them later so that args
 			// can override the defaults specified by ConfigureWebHostDefaults
 			_bootstrapHostBuilder.ConfigureDefaults(args: null);
