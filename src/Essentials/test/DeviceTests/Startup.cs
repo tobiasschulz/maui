@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	{
 		public static MauiAppBuilder CreateAppBuilder()
 		{
-			var appBuilder = MauiAppBuilder.CreateBuilder();
+			var appBuilder = MauiApp.CreateBuilder();
 			appBuilder
 				.ConfigureLifecycleEvents(life =>
 				{

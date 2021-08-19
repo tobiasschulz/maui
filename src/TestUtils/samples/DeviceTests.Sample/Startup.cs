@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 	{
 		public static MauiAppBuilder CreateAppBuilder()
 		{
-			var appBuilder = MauiAppBuilder.CreateBuilder();
+			var appBuilder = MauiApp.CreateBuilder();
 			appBuilder
 				.ConfigureTests(new TestOptions
 				{

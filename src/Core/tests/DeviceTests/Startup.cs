@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static MauiAppBuilder CreateAppBuilder()
 		{
-			var appBuilder = MauiAppBuilder.CreateBuilder();
+			var appBuilder = MauiApp.CreateBuilder();
 			appBuilder
 				.ConfigureLifecycleEvents(life =>
 				{

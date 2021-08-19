@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public HandlerTestBase()
 		{
-			var appBuilder = MauiAppBuilder
+			var appBuilder = MauiApp
 				.CreateBuilder()
 				.ConfigureMauiHandlers(handlers =>
 				{
@@ -38,7 +38,8 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
-			_servicesProvider = appBuilder.Build();
+			var mauiApp = appBuilder.Build();
+			_servicesProvider = mauiApp.Services;
 
 			_app = new ApplicationStub();
 
