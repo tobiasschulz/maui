@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	[MemoryDiagnoser]
 	public class GetHandlersBenchmarker
 	{
-		IAppHost _host;
+		MauiApp _mauiApp;
 
 		Registrar<IView, IViewHandler> _registrar;
 
@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[GlobalSetup(Target = nameof(GetHandlerUsingDI))]
 		public void SetupForDI()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
+			_mauiApp = MauiApp
+				.CreateBuilder()
 				.Build();
 		}
 
@@ -31,9 +31,10 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[Benchmark]
 		public void GetHandlerUsingDI()
 		{
+			var handlers = _mauiApp.Services.GetRequiredService<IMauiHandlersServiceProvider>();
 			for (int i = 0; i < N; i++)
 			{
-				_host.Handlers.GetHandler<IButton>();
+				handlers.GetHandler<IButton>();
 			}
 		}
 

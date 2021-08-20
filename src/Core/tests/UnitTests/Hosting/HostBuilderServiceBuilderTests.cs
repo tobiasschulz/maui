@@ -51,7 +51,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					});
 				});
 
-			var appConfigValue = builder.AppConfig["key 1"];
+			var appConfigValue = builder.Configuration["key 1"];
 			var mauiApp = builder.Build();
 
 			Assert.Equal("value 1", appConfigValue);
