@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 
 				this.ConfigureFonts();
 				this.ConfigureImageSources();
-				//ConfigureAnimations();
+				this.ConfigureAnimations();
 				this.ConfigureCrossPlatformLifecycleEvents();
 			}
 		}
