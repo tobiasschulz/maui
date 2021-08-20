@@ -111,8 +111,6 @@ namespace Maui.Controls.Sample
 					_ => throw new Exception(),
 				});
 
-			appBuilder.ConfigureImageSources();
-
 			appBuilder
 				.ConfigureFonts(fonts =>
 				{
