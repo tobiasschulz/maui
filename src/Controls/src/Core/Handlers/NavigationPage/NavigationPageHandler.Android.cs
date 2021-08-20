@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		}
 
-		NavigationPage _oldView;
 		protected override NavigationLayout CreateNativeView()
 		{
 			LayoutInflater li = LayoutInflater.From(Context);
@@ -35,11 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-			if (view != _oldView)
-			{
-				NativeView.OnElementChanged(new ElementChangedEventArgs<NavigationPage>(_oldView, (NavigationPage)view));
-				_oldView = (NavigationPage)view;
-			}
+			NativeView.SetVirtualView((NavigationPage)view);
 		}
 	}
 }

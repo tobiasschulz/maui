@@ -8,12 +8,10 @@ using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
-using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
-using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
@@ -23,7 +21,6 @@ using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
-using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using Object = Java.Lang.Object;
@@ -60,7 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// Must be overriden in a custom renderer to match durations in XML animation resource files
 		protected virtual int TransitionDuration { get; set; } = 220;
 		bool ILifeCycleState.MarkedForDispose { get; set; } = false;
-		
+
 		NavigationPage Element { get; set; }
 
 		public NavigationPageView(Context context) : base(context)
@@ -131,228 +128,17 @@ namespace Microsoft.Maui.Controls.Platform
 				_fragmentManager = childFragmentManager;
 		}
 
-		public Task<bool> PopToRootAsync(Page page, bool animated = true)
+		internal void SetVirtualView(NavigationPage view)
 		{
-			return OnPopToRootAsync(page, animated);
-		}
-
-		public Task<bool> PopViewAsync(Page page, bool animated = true)
-		{
-			return OnPopViewAsync(page, animated);
-		}
-
-		public Task<bool> PushViewAsync(Page page, bool animated = true)
-		{
-			return OnPushAsync(page, animated);
-		}
-
-		//protected override void Dispose(bool disposing)
-		//{
-		//	if (_disposed)
-		//		return;
-
-		//	_disposed = true;
-
-		//	if (disposing)
-		//	{
-		//		Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
-
-		//		if (NavigationPageController != null)
-		//		{
-		//			var navController = NavigationPageController;
-
-		//			//navController.PushRequested -= OnPushed;
-		//			//navController.PopRequested -= OnPopped;
-		//			//navController.PopToRootRequested -= OnPoppedToRoot;
-		//			//navController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-		//			//navController.RemovePageRequested -= OnRemovePageRequested;
-		//		}
-
-		//		if (Current != null)
-		//		{
-		//			Current.PropertyChanged -= CurrentOnPropertyChanged;
-		//		}
-
-		//		FragmentManager fm = FragmentManager;
-
-		//		if (!fm.IsDestroyed)
-		//		{
-		//			FragmentTransaction trans = fm.BeginTransactionEx();
-		//			foreach (Fragment fragment in _fragmentStack)
-		//				trans.RemoveEx(fragment);
-		//			trans.CommitAllowingStateLossEx();
-		//			fm.ExecutePendingTransactionsEx();
-		//		}
-
-		//		_toolbar.RemoveView(_titleView);
-		//		_titleView?.Dispose();
-		//		_titleView = null;
-
-		//		if (_titleViewHandler != null)
-		//		{
-		//			_titleViewHandler.VirtualView.Handler = null;
-		//			_titleViewHandler = null;
-		//		}
-
-		//		_toolbar.RemoveView(_titleIconView);
-		//		_titleIconView?.Dispose();
-		//		_titleIconView = null;
-
-		//		_imageSource = null;
-
-		//		if (_toolbarTracker != null)
-		//		{
-		//			_toolbarTracker.CollectionChanged -= ToolbarTrackerOnCollectionChanged;
-
-		//			_toolbar.DisposeMenuItems(_currentToolbarItems, OnToolbarItemPropertyChanged);
-
-		//			_toolbarTracker.Target = null;
-		//			_toolbarTracker = null;
-		//		}
-
-		//		if (_currentMenuItems != null)
-		//		{
-		//			_currentMenuItems.Clear();
-		//			_currentMenuItems = null;
-		//		}
-
-		//		if (_currentToolbarItems != null)
-		//		{
-		//			_currentToolbarItems.Clear();
-		//			_currentToolbarItems = null;
-		//		}
-
-		//		if (_toolbar != null)
-		//		{
-		//			_toolbar.SetNavigationOnClickListener(null);
-		//			_toolbar.Menu.Clear();
-
-		//			RemoveView(_toolbar);
-
-		//			_toolbar.Dispose();
-		//			_toolbar = null;
-		//		}
-
-		//		if (_drawerLayout.IsAlive() && _drawerListener.IsAlive())
-		//		{
-		//			_drawerLayout.RemoveDrawerListener(_drawerListener);
-
-		//			RemoveView(_drawerLayout);
-		//		}
-
-		//		if (_drawerListener != null)
-		//		{
-		//			_drawerListener.Dispose();
-		//			_drawerListener = null;
-		//		}
-
-		//		if (_drawerToggle != null)
-		//		{
-		//			_drawerToggle.ToolbarNavigationClickListener = null;
-		//			_drawerToggle.Dispose();
-		//			_drawerToggle = null;
-		//		}
-
-		//		if (_backgroundDrawable != null)
-		//		{
-		//			_backgroundDrawable.Dispose();
-		//			_backgroundDrawable = null;
-		//		}
-
-		//		Current = null;
-
-		//		// We dispose the child renderers after cleaning up everything related to DrawerLayout in case
-		//		// one of the children is a FlyoutPage (which may dispose of the DrawerLayout).
-		//		if (Element != null)
-		//		{
-		//			foreach (Element element in PageController.InternalChildren)
-		//			{
-		//				var child = element as VisualElement;
-		//				if (child == null)
-		//					continue;
-
-		//				child.Handler = null;
-		//			}
-		//		}
-		//	}
-
-		//	base.Dispose(disposing);
-		//}
-
-		//public override void OnAttachedToWindow()
-		//{
-		//	base.OnAttachedToWindow();
-
-		//	PageController.SendAppearing();
-
-		//	// If the Appearing handler changed the application's main page for some reason,
-		//	// this page may no longer be part of the hierarchy; if so, we need to skip
-		//	// updating the toolbar and pushing the pages to avoid crashing the app
-		//	// TODO MAUI
-		//	//if (!IsAttachedToRoot(Element))
-		//	//	return;
-
-		//	RegisterToolbar();
-
-		//	// If there is already stuff on the stack we need to push it
-		//	PushCurrentPages();
-
-		//	UpdateToolbar();
-		//	_isAttachedToWindow = true;
-		//}
-
-		//public override void OnDetachedFromWindow()
-		//{
-		//	base.OnDetachedFromWindow();
-		//	PageController.SendDisappearing();
-		//	_isAttachedToWindow = false;
-		//}
-
-		internal void OnElementChanged(ElementChangedEventArgs<NavigationPage> e)
-		{
-			_toolbar = FindViewById<MaterialToolbar>(Resource.Id.maui_toolbar);
-			_appBar = FindViewById<AppBarLayout>(Resource.Id.appbar);
-			Element = e.NewElement;
-
-			//if (e.OldElement != null)
-			//{
-			//	var oldNavController = (INavigationPageController)e.OldElement;
-
-			//	//oldNavController.PushRequested -= OnPushed;
-			//	//oldNavController.PopRequested -= OnPopped;
-			//	//oldNavController.PopToRootRequested -= OnPoppedToRoot;
-			//	//oldNavController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-			//	//oldNavController.RemovePageRequested -= OnRemovePageRequested;
-
-			//	RemoveAllViews();
-			//}
-
-			//if (e.NewElement != null)
-			//{
+			Element = view;
 			if (_toolbarTracker == null)
 			{
+				_toolbar = FindViewById<MaterialToolbar>(Resource.Id.maui_toolbar);
+				_appBar = FindViewById<AppBarLayout>(Resource.Id.appbar);
 				_toolbarTracker = new ToolbarTracker();
 				_toolbarTracker.CollectionChanged += ToolbarTrackerOnCollectionChanged;
-				_toolbarTracker.AdditionalTargets = Element.GetParentPages();
 			}
-
-			
-			//	UpdateMenu();
-
-			//	var navController = (INavigationPageController)e.NewElement;
-
-			//	//navController.PushRequested += OnPushed;
-			//	//navController.PopRequested += OnPopped;
-			//	//navController.PopToRootRequested += OnPoppedToRoot;
-			//	//navController.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
-			//	//navController.RemovePageRequested += OnRemovePageRequested;
-
-			//	// TODO MAUI
-			//	//if (_isAttachedToWindow /*&& Element.IsAttachedToRoot()*/)
-			//	//{
-			//	//	PushCurrentPages();
-			//	//}
-			//}
+			_toolbarTracker.AdditionalTargets = Element.GetParentPages();
 		}
 
 		internal void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -555,72 +341,24 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateToolbar();
 		}
 
-
-		//void InsertPageBefore(Page page, Page before)
-		//{
-		//	if (!_isAttachedToWindow)
-		//		PushCurrentPages();
-
-		//	UpdateToolbar();
-
-		//	int index = PageController.InternalChildren.IndexOf(before);
-		//	if (index == -1)
-		//		throw new InvalidOperationException("This should never happen, please file a bug");
-
-		//	Fragment fragment = FragmentContainer.CreateInstance(page, MauiContext);
-		//	_fragmentStack.Insert(index, fragment);
-		//}
-
-		//void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs e)
-		//{
-		//	InsertPageBefore(e.Page, e.BeforePage);
-		//}
-
-		void OnPopped(object sender, NavigationRequestedEventArgs e)
-		{
-			e.Task = PopViewAsync(e.Page, e.Animated);
-		}
-
-		void OnPoppedToRoot(object sender, NavigationRequestedEventArgs e)
-		{
-			e.Task = PopToRootAsync(e.Page, e.Animated);
-		}
-
-		protected virtual Task<bool> OnPopToRootAsync(Page page, bool animated)
-		{
-			throw new NotImplementedException();
-		}
-
-		protected virtual Task<bool> OnPopViewAsync(Page page, bool animated)
-		{
-			base.Pop(null);
-			//UpdateToolbar();
-			//UpdateMenu();
-			//Page pageToShow = NavigationPageController.Peek(1);
-			//if (pageToShow == null)
-			//	return Task.FromResult(false);
-
-			//return SwitchContentAsync(pageToShow, animated, true);
-			return Task.FromResult(true);
-		}
-
-		protected virtual Task<bool> OnPushAsync(Page view, bool animated)
-		{
-			//base.Push(null);
-			//UpdateToolbar();
-			//UpdateMenu();
-			return Task.FromResult(true);
-		}
-
 		TaskCompletionSource<bool> _taskCompletionSource;
 		public override void Push(MauiNavigationRequestedEventArgs e)
 		{
+			UpdateToolbar();
+
+			if (e.Animated && _drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton((Page)e.Page))
+				AnimateArrowIn();
+
+
 			_taskCompletionSource = new TaskCompletionSource<bool>();
 			base.Push(e);
 		}
 
 		public override void Pop(object arg3)
 		{
+			if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(_current))
+				AnimateArrowOut();
+
 			_taskCompletionSource = new TaskCompletionSource<bool>();
 			base.Pop(arg3);
 		}
@@ -639,7 +377,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPushed(object sender, NavigationRequestedEventArgs e)
 		{
-			e.Task = PushViewAsync(e.Page, e.Animated);
+			//e.Task = PushViewAsync(e.Page, e.Animated);
 		}
 
 		//void OnRemovePageRequested(object sender, NavigationRequestedEventArgs e)
@@ -707,39 +445,39 @@ namespace Microsoft.Maui.Controls.Platform
 			_drawerLayout.AddDrawerListener(_drawerListener);
 		}
 
-//		void RemovePage(Page page)
-//		{
-//			if (!_isAttachedToWindow)
-//				PushCurrentPages();
+		//		void RemovePage(Page page)
+		//		{
+		//			if (!_isAttachedToWindow)
+		//				PushCurrentPages();
 
-//			Fragment fragment = GetPageFragment(page);
+		//			Fragment fragment = GetPageFragment(page);
 
-//			if (fragment == null)
-//			{
-//				return;
-//			}
+		//			if (fragment == null)
+		//			{
+		//				return;
+		//			}
 
-//#if DEBUG
-//			// Enables logging of moveToState operations to logcat
-//#pragma warning disable CS0618 // Type or member is obsolete
-//			FragmentManager.EnableDebugLogging(true);
-//#pragma warning restore CS0618 // Type or member is obsolete
-//#endif
+		//#if DEBUG
+		//			// Enables logging of moveToState operations to logcat
+		//#pragma warning disable CS0618 // Type or member is obsolete
+		//			FragmentManager.EnableDebugLogging(true);
+		//#pragma warning restore CS0618 // Type or member is obsolete
+		//#endif
 
-//			// Go ahead and take care of the fragment bookkeeping for the page being removed
-//			FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
-//			transaction.RemoveEx(fragment);
-//			transaction.CommitAllowingStateLossEx();
+		//			// Go ahead and take care of the fragment bookkeeping for the page being removed
+		//			FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
+		//			transaction.RemoveEx(fragment);
+		//			transaction.CommitAllowingStateLossEx();
 
-//			// And remove the fragment from our own stack
-//			_fragmentStack.Remove(fragment);
+		//			// And remove the fragment from our own stack
+		//			_fragmentStack.Remove(fragment);
 
-//			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
-//			{
-//				UpdateToolbar();
-//				return false;
-//			});
-//		}
+		//			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
+		//			{
+		//				UpdateToolbar();
+		//				return false;
+		//			});
+		//		}
 
 		//void ResetToolbar()
 		//{
@@ -779,115 +517,115 @@ namespace Microsoft.Maui.Controls.Platform
 		//		_toolbar.Subtitle = oldToolbar.Subtitle;
 		//}
 
-//		Task<bool> SwitchContentAsync(Page page, bool animated, bool removed = false, bool popToRoot = false)
-//		{
-//			animated = false;
-//			// TODO MAUI
-//			//if (!IsAttachedToRoot(Element))
-//			//	return Task.FromResult(false);
+		//		Task<bool> SwitchContentAsync(Page page, bool animated, bool removed = false, bool popToRoot = false)
+		//		{
+		//			animated = false;
+		//			// TODO MAUI
+		//			//if (!IsAttachedToRoot(Element))
+		//			//	return Task.FromResult(false);
 
-//			var tcs = new TaskCompletionSource<bool>();
-//			Fragment fragment = GetFragment(page, removed, popToRoot);
+		//			var tcs = new TaskCompletionSource<bool>();
+		//			Fragment fragment = GetFragment(page, removed, popToRoot);
 
-//#if DEBUG
-//			// Enables logging of moveToState operations to logcat
-//#pragma warning disable CS0618 // Type or member is obsolete
-//			FragmentManager.EnableDebugLogging(true);
-//#pragma warning restore CS0618 // Type or member is obsolete
-//#endif
+		//#if DEBUG
+		//			// Enables logging of moveToState operations to logcat
+		//#pragma warning disable CS0618 // Type or member is obsolete
+		//			FragmentManager.EnableDebugLogging(true);
+		//#pragma warning restore CS0618 // Type or member is obsolete
+		//#endif
 
-//			Current?.SendDisappearing();
-//			Current = page;
+		//			Current?.SendDisappearing();
+		//			Current = page;
 
-//			// TODO MAUI
-//			//if (Platform != null)
-//			//{
-//			//	Platform.NavAnimationInProgress = true;
-//			//}
+		//			// TODO MAUI
+		//			//if (Platform != null)
+		//			//{
+		//			//	Platform.NavAnimationInProgress = true;
+		//			//}
 
-//			FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
+		//			FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
 
-//			if (animated)
-//				SetupPageTransition(transaction, !removed);
+		//			if (animated)
+		//				SetupPageTransition(transaction, !removed);
 
-//			var fragmentsToRemove = new List<Fragment>();
+		//			var fragmentsToRemove = new List<Fragment>();
 
-//			if (_fragmentStack.Count == 0)
-//			{
-//				transaction.AddEx(Resource.Id.nav_host, fragment);
-//				_fragmentStack.Add(fragment);
-//			}
-//			else
-//			{
-//				if (removed)
-//				{
-//					// pop only one page, or pop everything to the root
-//					var popPage = true;
-//					while (_fragmentStack.Count > 1 && popPage)
-//					{
-//						Fragment currentToRemove = _fragmentStack.Last();
-//						_fragmentStack.RemoveAt(_fragmentStack.Count - 1);
-//						transaction.RemoveEx(currentToRemove);
-//						fragmentsToRemove.Add(currentToRemove);
-//						popPage = popToRoot;
-//					}
+		//			if (_fragmentStack.Count == 0)
+		//			{
+		//				transaction.AddEx(Resource.Id.nav_host, fragment);
+		//				_fragmentStack.Add(fragment);
+		//			}
+		//			else
+		//			{
+		//				if (removed)
+		//				{
+		//					// pop only one page, or pop everything to the root
+		//					var popPage = true;
+		//					while (_fragmentStack.Count > 1 && popPage)
+		//					{
+		//						Fragment currentToRemove = _fragmentStack.Last();
+		//						_fragmentStack.RemoveAt(_fragmentStack.Count - 1);
+		//						transaction.RemoveEx(currentToRemove);
+		//						fragmentsToRemove.Add(currentToRemove);
+		//						popPage = popToRoot;
+		//					}
 
-//					transaction.SetCustomAnimations(Resource.Animation.enterfromleft, Resource.Animation.exittoright);
-					
-//					Fragment toShow = _fragmentStack.Last();
-//					// Execute pending transactions so that we can be sure the fragment list is accurate.
-//					// FragmentManager.ExecutePendingTransactionsEx();
-//					if (FragmentManager.Fragments.Contains(toShow))
-//						transaction.ShowEx(toShow);
-//					else
-//						transaction.AddEx(Resource.Id.nav_host, toShow);
-//				}
-//				else
-//				{
-//					transaction.SetCustomAnimations(Resource.Animation.enterfromright, Resource.Animation.exittoleft);
-//					// push
-//					Fragment currentToHide = _fragmentStack.Last();
-//					transaction.HideEx(currentToHide);
-//					transaction.AddEx(Resource.Id.nav_host, fragment);
-//					transaction.ShowEx(fragment);
-//					_fragmentStack.Add(fragment);
-//				}
-//			}
+		//					transaction.SetCustomAnimations(Resource.Animation.enterfromleft, Resource.Animation.exittoright);
 
-//			// We don't currently support fragment restoration, so we don't need to worry about
-//			// whether the commit loses state
-//			transaction.CommitAllowingStateLossEx();
+		//					Fragment toShow = _fragmentStack.Last();
+		//					// Execute pending transactions so that we can be sure the fragment list is accurate.
+		//					// FragmentManager.ExecutePendingTransactionsEx();
+		//					if (FragmentManager.Fragments.Contains(toShow))
+		//						transaction.ShowEx(toShow);
+		//					else
+		//						transaction.AddEx(Resource.Id.nav_host, toShow);
+		//				}
+		//				else
+		//				{
+		//					transaction.SetCustomAnimations(Resource.Animation.enterfromright, Resource.Animation.exittoleft);
+		//					// push
+		//					Fragment currentToHide = _fragmentStack.Last();
+		//					transaction.HideEx(currentToHide);
+		//					transaction.AddEx(Resource.Id.nav_host, fragment);
+		//					transaction.ShowEx(fragment);
+		//					_fragmentStack.Add(fragment);
+		//				}
+		//			}
 
-//			// The fragment transitions don't really SUPPORT telling you when they end
-//			// There are some hacks you can do, but they actually are worse than just doing this:
+		//			// We don't currently support fragment restoration, so we don't need to worry about
+		//			// whether the commit loses state
+		//			transaction.CommitAllowingStateLossEx();
 
-//			if (animated)
-//			{
-//				if (!removed)
-//				{
-//					UpdateToolbar();
-//					if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(page))
-//						AnimateArrowIn();
-//				}
-//				else if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(page))
-//					AnimateArrowOut();
+		//			// The fragment transitions don't really SUPPORT telling you when they end
+		//			// There are some hacks you can do, but they actually are worse than just doing this:
 
-//				//AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, TransitionDuration, removed);
-//			}
-//			//else
-//			//	AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, 1, true);
+		//			if (animated)
+		//			{
+		//				if (!removed)
+		//				{
+		//					UpdateToolbar();
+		//					if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(page))
+		//						AnimateArrowIn();
+		//				}
+		//				else if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(page))
+		//					AnimateArrowOut();
 
-//			Context.HideKeyboard(this);
+		//				//AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, TransitionDuration, removed);
+		//			}
+		//			//else
+		//			//	AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, 1, true);
 
-//			// TODO MAUI
-//			//if (Platform != null)
-//			//{
-//			//	Platform.NavAnimationInProgress = false;
-//			//}
+		//			Context.HideKeyboard(this);
 
-//			tcs.SetResult(true);
-//			return tcs.Task;
-//		}
+		//			// TODO MAUI
+		//			//if (Platform != null)
+		//			//{
+		//			//	Platform.NavAnimationInProgress = false;
+		//			//}
+
+		//			tcs.SetResult(true);
+		//			return tcs.Task;
+		//		}
 
 
 		void ToolbarTrackerOnCollectionChanged(object sender, EventArgs eventArgs)
@@ -939,10 +677,10 @@ namespace Microsoft.Maui.Controls.Platform
 						toggle.SyncState();
 					}
 
+					
 					var icon = new DrawerArrowDrawable(context.GetThemedContext());
 					icon.Progress = 1;
 					bar.NavigationIcon = icon;
-
 					var prevPage = Element.Peek(1);
 					var backButtonTitle = NavigationPage.GetBackButtonTitle(prevPage);
 					_defaultNavigationContentDescription = backButtonTitle != null
@@ -1028,12 +766,11 @@ namespace Microsoft.Maui.Controls.Platform
 				_imageSource = source;
 				_titleIconView.SetImageResource(global::Android.Resource.Color.Transparent);
 
-				// TODO MAUI
-				//_ = this.ApplyDrawableAsync(currentPage, NavigationPage.TitleIconImageSourceProperty, Context, drawable =>
-				//{
-				//	_titleIconView.SetImageDrawable(drawable);
-				//	AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
-				//});
+				ShellImagePart.LoadImage(source, MauiContext, (result) =>
+				{
+					_titleIconView.SetImageDrawable(result.Value);
+					AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
+				});
 			}
 		}
 

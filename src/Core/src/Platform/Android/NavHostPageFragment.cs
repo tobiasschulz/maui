@@ -86,7 +86,7 @@ namespace Microsoft.Maui
 
 			if (Context.GetActivity() is AppCompatActivity aca)
 			{
-				aca.SupportActionBar.Title = titledElement?.Title;
+			    //_navigationLayout.AppBar.action	aca.SupportActionBar.Title = titledElement?.Title;
 
 				// TODO MAUI put this elsewhere once we figure out how attached property handlers work
 				bool showNavBar = true;

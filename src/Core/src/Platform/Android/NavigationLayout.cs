@@ -185,13 +185,18 @@ namespace Microsoft.Maui
 		{
 			var destination =
 				MauiFragmentNavDestination.AddDestination(e.Page, this, NavHost.NavController.Graph, FragmentNavigator);
-			
-			NavOptions navOptions = new NavOptions.Builder()
-				 .SetEnterAnim(Resource.Animation.enterfromright)
-				 .SetExitAnim(Resource.Animation.exittoleft)
-				 .SetPopEnterAnim(Resource.Animation.enterfromleft)
-				 .SetPopExitAnim(Resource.Animation.exittoright)
-				 .Build();
+
+			NavOptions? navOptions = null;
+
+			if (e.Animated)
+			{
+				new NavOptions.Builder()
+					 .SetEnterAnim(Resource.Animation.enterfromright)
+					 .SetExitAnim(Resource.Animation.exittoleft)
+					 .SetPopEnterAnim(Resource.Animation.enterfromleft)
+					 .SetPopExitAnim(Resource.Animation.exittoright)
+					 .Build();
+			}
 
 			NavHost.NavController.Navigate(destination.Id, null, navOptions);
 		}
