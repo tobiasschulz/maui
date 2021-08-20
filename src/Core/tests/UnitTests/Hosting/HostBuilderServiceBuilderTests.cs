@@ -50,11 +50,11 @@ namespace Microsoft.Maui.UnitTests.Hosting
 						{ "key 1", "value 1" },
 					});
 				});
-			// TODO: CHECK THIS!
-			//var appConfigValue = builder.AppConfig["key 1"];
+
+			var appConfigValue = builder.AppConfig["key 1"];
 			var mauiApp = builder.Build();
 
-			//Assert.Equal("value 1", appConfigValue);
+			Assert.Equal("value 1", appConfigValue);
 		}
 
 		class MicrosoftExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>

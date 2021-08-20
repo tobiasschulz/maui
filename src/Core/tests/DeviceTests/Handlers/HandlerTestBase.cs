@@ -13,6 +13,7 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;
+		MauiApp _mauiApp;
 		IServiceProvider _servicesProvider;
 		IMauiContext _context;
 
@@ -38,8 +39,8 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
-			var mauiApp = appBuilder.Build();
-			_servicesProvider = mauiApp.Services;
+			_mauiApp = appBuilder.Build();
+			_servicesProvider = _mauiApp.Services;
 
 			_app = new ApplicationStub();
 
@@ -48,6 +49,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		public void Dispose()
 		{
+			((IDisposable)_mauiApp).Dispose();
+			_mauiApp = null;
 			_servicesProvider = null;
 			_app = null;
 			_context = null;
