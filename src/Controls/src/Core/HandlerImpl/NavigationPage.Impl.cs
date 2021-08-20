@@ -8,7 +8,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class NavigationPage : INavigationView
+	public partial class NavigationPage : INavigationViewInternal
 	{
 		Thickness IView.Margin => Thickness.Zero;
 
@@ -16,15 +16,15 @@ namespace Microsoft.Maui.Controls
 		{
 			PushRequested += (_, args) =>
 			{
-				var request = new MauiNavigationRequestedEventArgs(args.Page, args.BeforePage, args.Animated);
-				Handler?.Invoke(nameof(INavigationView.PushAsync), request);
+				var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
+				Handler?.Invoke(nameof(INavigationViewInternal.PushAsync), request);
 
 			};
 
 			PopRequested += (_, args) =>
 			{
-				var request = new MauiNavigationRequestedEventArgs(args.Page, args.BeforePage, args.Animated);
-				Handler?.Invoke(nameof(INavigationView.PopAsync), request);
+				var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
+				Handler?.Invoke(nameof(INavigationViewInternal.PopAsync), request);
 			};
 		}
 
@@ -50,49 +50,49 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
-		void INavigationView.InsertPageBefore(IView page, IView before)
+		void INavigationViewInternal.InsertPageBefore(IView page, IView before)
 		{
 			throw new NotImplementedException();
 		}
 
-		Task<IView> INavigationView.PopAsync() =>
-			(this as INavigationView).PopAsync(true);
+		Task<IView> INavigationViewInternal.PopAsync() =>
+			(this as INavigationViewInternal).PopAsync(true);
 
-		async Task<IView> INavigationView.PopAsync(bool animated)
+		async Task<IView> INavigationViewInternal.PopAsync(bool animated)
 		{
 			var thing = await this.PopAsync(animated);
 			return thing;
 		}
 
-		Task<IView> INavigationView.PopModalAsync()
+		Task<IView> INavigationViewInternal.PopModalAsync()
 		{
 			throw new NotImplementedException();
 		}
 
-		Task<IView> INavigationView.PopModalAsync(bool animated)
+		Task<IView> INavigationViewInternal.PopModalAsync(bool animated)
 		{
 			throw new NotImplementedException();
 		}
 
-		Task INavigationView.PushAsync(IView page) =>
-			(this as INavigationView).PushAsync(page, true);
+		Task INavigationViewInternal.PushAsync(IView page) =>
+			(this as INavigationViewInternal).PushAsync(page, true);
 
-		Task INavigationView.PushAsync(IView page, bool animated)
+		Task INavigationViewInternal.PushAsync(IView page, bool animated)
 		{
 			return this.PushAsync((Page)page, animated);
 		}
 
-		Task INavigationView.PushModalAsync(IView page)
+		Task INavigationViewInternal.PushModalAsync(IView page)
 		{
 			throw new NotImplementedException();
 		}
 
-		Task INavigationView.PushModalAsync(IView page, bool animated)
+		Task INavigationViewInternal.PushModalAsync(IView page, bool animated)
 		{
 			throw new NotImplementedException();
 		}
 
-		void INavigationView.RemovePage(IView page)
+		void INavigationViewInternal.RemovePage(IView page)
 		{
 			throw new NotImplementedException();
 		}
@@ -100,9 +100,9 @@ namespace Microsoft.Maui.Controls
 		IView Content =>
 			this.CurrentPage;
 
-		IReadOnlyList<IView> INavigationView.ModalStack => throw new NotImplementedException();
+		IReadOnlyList<IView> INavigationViewInternal.ModalStack => throw new NotImplementedException();
 
-		IReadOnlyList<IView> INavigationView.NavigationStack =>
+		IReadOnlyList<IView> INavigationViewInternal.NavigationStack =>
 			this.Navigation.NavigationStack;
 	}
 

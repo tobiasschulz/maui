@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 		ControlsNavigationController? _controlsNavigationController;
 		UIViewController? INativeViewHandler.ViewController => _controlsNavigationController;
 
+		public INavigationViewInternal NavigationView => ((INavigationViewInternal)VirtualView);
 		protected override UIView CreateNativeView()
 		{
 			_controlsNavigationController = new ControlsNavigationController(this);
@@ -52,11 +53,11 @@ namespace Microsoft.Maui.Handlers
 
 		internal void SendPopping(Task popTask)
 		{
-			if (VirtualView == null)
+			if (VirtualView is not INavigationViewInternal nvi)
 				return;
 
 			// TODO MAUI
-			VirtualView
+			nvi
 				.PopAsync()
 				.FireAndForget((e) =>
 				{

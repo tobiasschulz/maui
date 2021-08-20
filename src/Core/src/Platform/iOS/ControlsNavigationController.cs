@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		readonly Dictionary<IView, INativeViewHandler> _trackers =
 			new Dictionary<IView, INativeViewHandler>();
 
-		IReadOnlyList<IView> NavigationStack => _handler.VirtualView.NavigationStack;
+		IReadOnlyList<IView> NavigationStack => _handler.NavigationView.NavigationStack;
 
 		public ControlsNavigationController(NavigationPageHandler handler) : base()
 		{

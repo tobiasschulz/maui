@@ -54,20 +54,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void LoadImage(IImageSource source, IMauiContext mauiContext, Action<IImageSourceServiceResult<Drawable>> finished = null)
 		{
-			GetImageAsync(source, mauiContext)
-						.FireAndForget(e => Internals.Log.Warning(nameof(ShellImagePart), $"{e}"), finished);
+			LoadImageResult(GetImageAsync(source, mauiContext), finished)
+						.FireAndForget(e => Internals.Log.Warning(nameof(ShellImagePart), $"{e}"));
 		}
 
 		public static void LoadImage(IImageSourcePart part, IMauiContext mauiContext, Action<IImageSourceServiceResult<Drawable>> finished = null)
 		{
-			GetImageAsync(part.Source, mauiContext)
-						.FireAndForget(e => Internals.Log.Warning(nameof(ShellImagePart), $"{e}"), finished);
+			LoadImageResult(GetImageAsync(part.Source, mauiContext), finished)
+						.FireAndForget(e => Internals.Log.Warning(nameof(ShellImagePart), $"{e}"));
 		}
 
 		public void LoadImage(ImageView view, Action<IImageSourceServiceResult<Drawable>> finished = null)
 		{
-			LoadImageAsync(view)
-						.FireAndForget(e => Internals.Log.Warning(nameof(ShellImagePart), $"{e}"), finished);
+			LoadImageResult(LoadImageAsync(view), finished)
+						.FireAndForget(e => Internals.Log.Warning(nameof(ShellImagePart), $"{e}"));
+		}
+
+		static async Task LoadImageResult(Task<IImageSourceServiceResult<Drawable>> task, Action<IImageSourceServiceResult<Drawable>> finished = null)
+		{
+			var result = await task;
+			finished?.Invoke(result);
 		}
 
 		public Task<IImageSourceServiceResult<Drawable>> LoadImageAsync(ImageView view)

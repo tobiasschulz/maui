@@ -17,9 +17,12 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	class NavHostPageFragment : Fragment
+	public class NavHostPageFragment : Fragment
 	{
-		private MauiFragmentNavDestination? _navDestination;
+		NavigationLayout? _navigationLayout;
+		NavigationLayout NavigationLayout => _navigationLayout ??= NavDestination.NavigationLayout;
+
+		MauiFragmentNavDestination? _navDestination;
 
 		ProcessBackClick BackClick { get; }
 
@@ -27,10 +30,10 @@ namespace Microsoft.Maui
 				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
 			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
 
-		MauiFragmentNavDestination NavDestination
+		public MauiFragmentNavDestination NavDestination
 		{
 			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here");
-			set => _navDestination = value;
+			private set => _navDestination = value;
 		}
 
 		protected NavHostPageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -69,17 +72,17 @@ namespace Microsoft.Maui
 					.Build();
 
 			NavigationUI
-				.SetupWithNavController(NavDestination.NavigationPageHandler.Toolbar, controller, appbarConfig);
+				.SetupWithNavController(NavDestination.NavigationLayout.Toolbar, controller, appbarConfig);
 
 			HasOptionsMenu = true;
 
-			NavDestination.NavigationPageHandler.Toolbar.SetNavigationOnClickListener(BackClick);
+			NavDestination.NavigationLayout.Toolbar.SetNavigationOnClickListener(BackClick);
 
 			UpdateToolbar();
 
 			var titledElement = NavDestination.Page as ITitledElement;
 
-			NavDestination.NavigationPageHandler.Toolbar.Title = titledElement?.Title;
+			NavDestination.NavigationLayout.Toolbar.Title = titledElement?.Title;
 
 			if (Context.GetActivity() is AppCompatActivity aca)
 			{
@@ -90,7 +93,7 @@ namespace Microsoft.Maui
 				//if (NavDestination.Page is BindableObject bo)
 				//	showNavBar = NavigationPage.GetHasNavigationBar(bo);
 
-				var appBar = NavDestination.NavigationPageHandler.AppBar;
+				var appBar = NavDestination.NavigationLayout.AppBar;
 				if (!showNavBar)
 				{
 					if (appBar.LayoutParameters is CoordinatorLayout.LayoutParams cl)
@@ -131,6 +134,12 @@ namespace Microsoft.Maui
 			}
 
 		}
+		
+		public override void OnDestroyView()
+		{			
+			_navigationLayout = null;
+			base.OnDestroyView();
+		}
 
 		public override void OnCreate(Bundle savedInstanceState)
 		{
@@ -142,7 +151,7 @@ namespace Microsoft.Maui
 
 		public void HandleOnBackPressed()
 		{
-			NavDestination.NavigationPageHandler.OnPop();
+			NavDestination.NavigationLayout.OnPop();
 		}
 
 		// TODO Move somewhere else

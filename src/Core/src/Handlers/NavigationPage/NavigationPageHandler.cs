@@ -9,25 +9,12 @@ namespace Microsoft.Maui.Handlers
 	internal partial class NavigationPageHandler
 	{
 		public static PropertyMapper<INavigationView, NavigationPageHandler> NavigationPageMapper
-			   = new PropertyMapper<INavigationView, NavigationPageHandler>(ViewHandler.ViewMapper)
-			   {
-				   //[NavigationPage.BarTextColorProperty.PropertyName] = MapBarTextColor,
-				   //[NavigationPage.BarBackgroundColorProperty.PropertyName] = MapBarBackground,
-				   //[NavigationPage.BarBackgroundProperty.PropertyName] = MapBarBackground,
-				   //[nameof(IPadding.Padding)] = MapPadding,
-				   //[nameof(NavigationPage.TitleIconImageSourceProperty.PropertyName)] = MapTitleIcon,
-				   //[nameof(NavigationPage.TitleViewProperty.PropertyName)] = MapTitleView,
-
-#if WINDOWS
-					//[nameof(ToolbarPlacementProperty.PropertyName)] = MapToolbarPlacement,
-					//[nameof(ToolbarDynamicOverflowEnabledProperty.PropertyName)] = MapToolbarDynamicOverflowEnabled,
-#endif
-			   };
+			   = new PropertyMapper<INavigationView, NavigationPageHandler>(ViewHandler.ViewMapper);
 
 		public static CommandMapper<INavigationView, NavigationPageHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(INavigationView.PushAsync)] = PushAsyncTo,
-			[nameof(INavigationView.PopAsync)] = PopAsyncTo
+			[nameof(INavigationViewInternal.PushAsync)] = PushAsyncTo,
+			[nameof(INavigationViewInternal.PopAsync)] = PopAsyncTo
 		};
 
 		public NavigationPageHandler() : base(NavigationPageMapper, NavigationViewCommandMapper)
