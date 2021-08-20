@@ -8,7 +8,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class NavigationPage : INavigationViewInternal
+	public partial class NavigationPage : INavigationView
 	{
 		Thickness IView.Margin => Thickness.Zero;
 
@@ -16,15 +16,16 @@ namespace Microsoft.Maui.Controls
 		{
 			PushRequested += (_, args) =>
 			{
-				var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
-				Handler?.Invoke(nameof(INavigationViewInternal.PushAsync), request);
+				//List<IView> newStack = new List<IView>();
+				//var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
+				//Handler?.Invoke(nameof(INavigationView.PushAsync), request);
 
 			};
 
 			PopRequested += (_, args) =>
 			{
-				var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
-				Handler?.Invoke(nameof(INavigationViewInternal.PopAsync), request);
+				//var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
+				//Handler?.Invoke(nameof(INavigationView.PopAsync), request);
 			};
 		}
 
@@ -50,59 +51,66 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
-		void INavigationViewInternal.InsertPageBefore(IView page, IView before)
+		void INavigationView.NavigationFinished()
 		{
 			throw new NotImplementedException();
 		}
 
-		Task<IView> INavigationViewInternal.PopAsync() =>
-			(this as INavigationViewInternal).PopAsync(true);
-
-		async Task<IView> INavigationViewInternal.PopAsync(bool animated)
-		{
-			var thing = await this.PopAsync(animated);
-			return thing;
-		}
-
-		Task<IView> INavigationViewInternal.PopModalAsync()
+		void INavigationView.RequestNavigation(MauiNavigationRequestedEventArgs eventArgs)
 		{
 			throw new NotImplementedException();
 		}
 
-		Task<IView> INavigationViewInternal.PopModalAsync(bool animated)
-		{
-			throw new NotImplementedException();
-		}
+		//void INavigationView.InsertPageBefore(IView page, IView before)
+		//{
+		//	throw new NotImplementedException();
+		//}
 
-		Task INavigationViewInternal.PushAsync(IView page) =>
-			(this as INavigationViewInternal).PushAsync(page, true);
+		//Task<IView> INavigationView.PopAsync() =>
+		//	(this as INavigationView).PopAsync(true);
 
-		Task INavigationViewInternal.PushAsync(IView page, bool animated)
-		{
-			return this.PushAsync((Page)page, animated);
-		}
+		//async Task<IView> INavigationView.PopAsync(bool animated)
+		//{
+		//	var thing = await this.PopAsync(animated);
+		//	return thing;
+		//}
 
-		Task INavigationViewInternal.PushModalAsync(IView page)
-		{
-			throw new NotImplementedException();
-		}
+		//Task<IView> INavigationView.PopModalAsync()
+		//{
+		//	throw new NotImplementedException();
+		//}
 
-		Task INavigationViewInternal.PushModalAsync(IView page, bool animated)
-		{
-			throw new NotImplementedException();
-		}
+		//Task<IView> INavigationView.PopModalAsync(bool animated)
+		//{
+		//	throw new NotImplementedException();
+		//}
 
-		void INavigationViewInternal.RemovePage(IView page)
-		{
-			throw new NotImplementedException();
-		}
+		//Task INavigationView.PushAsync(IView page) =>
+		//	(this as INavigationView).PushAsync(page, true);
 
-		IView Content =>
-			this.CurrentPage;
+		//Task INavigationView.PushAsync(IView page, bool animated)
+		//{
+		//	return this.PushAsync((Page)page, animated);
+		//}
 
-		IReadOnlyList<IView> INavigationViewInternal.ModalStack => throw new NotImplementedException();
+		//Task INavigationView.PushModalAsync(IView page)
+		//{
+		//	throw new NotImplementedException();
+		//}
 
-		IReadOnlyList<IView> INavigationViewInternal.NavigationStack =>
+		//Task INavigationView.PushModalAsync(IView page, bool animated)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		//void INavigationView.RemovePage(IView page)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		IView Content => this.CurrentPage;
+
+		IReadOnlyList<IView> INavigationView.NavigationStack =>
 			this.Navigation.NavigationStack;
 	}
 

@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 		AppBarLayout? _appBar;
 
 		internal IView? VirtualView { get; private set;  }
-		internal INavigationViewInternal? NavigationView { get; private set; }
+		internal INavigationView? NavigationView { get; private set; }
 
 		public IMauiContext MauiContext => VirtualView?.Handler?.MauiContext ?? 
 			throw new InvalidOperationException($"MauiContext cannot be null");
@@ -84,7 +84,7 @@ namespace Microsoft.Maui
 			_appBar = FindViewById<AppBarLayout>(Resource.Id.appbar);
 
 			VirtualView = navigationView;
-			NavigationView = (INavigationViewInternal)navigationView;
+			NavigationView = (INavigationView)navigationView;
 		}
 
 		internal void Connect()
