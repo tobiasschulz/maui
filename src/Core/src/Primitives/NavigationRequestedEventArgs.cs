@@ -7,16 +7,14 @@ namespace Microsoft.Maui
 {
 	public class MauiNavigationRequestedEventArgs : EventArgs
 	{
-		readonly IList<IView> _newNavigationStack;
+		public IReadOnlyList<IView> NavigationStack { get; }
 
-		public MauiNavigationRequestedEventArgs(IList<IView> newNavigationStack, bool animated)
+		public MauiNavigationRequestedEventArgs(IReadOnlyList<IView> newNavigationStack, bool animated)
 		{
-			_newNavigationStack = newNavigationStack;
+			NavigationStack = newNavigationStack;
 			Animated = animated;
 		}
 
 		public bool Animated { get; set; }
-
-		public Task<bool>? Task { get; set; }
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
@@ -22,10 +23,10 @@ namespace Microsoft.Maui
 		Toolbar? _toolbar;
 		AppBarLayout? _appBar;
 
-		internal IView? VirtualView { get; private set;  }
+		internal IView? VirtualView { get; private set; }
 		internal INavigationView? NavigationView { get; private set; }
 
-		public IMauiContext MauiContext => VirtualView?.Handler?.MauiContext ?? 
+		public IMauiContext MauiContext => VirtualView?.Handler?.MauiContext ??
 			throw new InvalidOperationException($"MauiContext cannot be null");
 
 #pragma warning disable CS0618 //FIXME: [Preserve] is obsolete
@@ -50,19 +51,19 @@ namespace Microsoft.Maui
 		}
 #pragma warning restore CS0618 //FIXME: [Preserve] is obsolete
 
-		NavHostFragment NavHost
+		internal NavHostFragment NavHost
 		{
 			get => _navHost ?? throw new InvalidOperationException($"NavHost cannot be null");
 			set => _navHost = value;
 		}
 
-		FragmentNavigator FragmentNavigator
+		internal FragmentNavigator FragmentNavigator
 		{
 			get => _fragmentNavigator ?? throw new InvalidOperationException($"FragmentNavigator cannot be null");
 			set => _fragmentNavigator = value;
 		}
 
-		int NativeNavigationStackCount => NavHost?.NavController.BackStack.Size() - 1 ?? 0;
+		
 		int NavigationStackCount => NavigationView?.NavigationStack.Count ?? 0;
 
 		internal Toolbar Toolbar
@@ -79,7 +80,7 @@ namespace Microsoft.Maui
 
 
 		public virtual void SetVirtualView(IView navigationView)
-		{			
+		{
 			_toolbar = FindViewById<Toolbar>(Resource.Id.maui_toolbar);
 			_appBar = FindViewById<AppBarLayout>(Resource.Id.appbar);
 
@@ -102,39 +103,16 @@ namespace Microsoft.Maui
 					.NavigatorProvider
 					.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
 
-
 			var navGraphNavigator =
 				(NavGraphNavigator)NavHost
 					.NavController
 					.NavigatorProvider
 					.GetNavigator(Java.Lang.Class.FromType(typeof(NavGraphNavigator)));
 
-			NavGraph graph = new NavGraph(navGraphNavigator);
-
-			NavDestination navDestination;
-			List<int> destinations = new List<int>();
-			foreach (var page in NavigationView.NavigationStack)
-			{
-				navDestination =
-					MauiFragmentNavDestination.
-						AddDestination(
-							page,
-							this,
-							graph,
-							FragmentNavigator);
-
-				destinations.Add(navDestination.Id);
-			}
-
-			graph.StartDestination = destinations[0];
-
-			NavHost.NavController.SetGraph(graph, null);
-
-			for (var i = NativeNavigationStackCount; i < NavigationStackCount; i++)
-			{
-				var dest = destinations[i];
-				NavHost.NavController.Navigate(dest);
-			}
+			var navGraphSwap = new NavGraphDestination(navGraphNavigator);
+			navGraphSwap.ApplyPagesToGraph(
+				NavigationView.NavigationStack,
+				this);
 
 			NavHost.NavController.AddOnDestinationChangedListener(this);
 			NavHost.ChildFragmentManager.RegisterFragmentLifecycleCallbacks(new FragmentLifecycleCallback(this), false);
@@ -147,6 +125,54 @@ namespace Microsoft.Maui
 		internal virtual void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavHostPageFragment navHostPageFragment)
 		{
 		}
+
+		public virtual void RequestNavigation(MauiNavigationRequestedEventArgs e)
+		{
+			var graph = (NavGraphDestination)NavHost.NavController.Graph;
+			graph.ReShuffleDestinations(e.NavigationStack, e.Animated, this);
+
+
+			//if (e.NavigationStack.Count > _navigationStack.Count)
+			//{
+			//	var destination =
+			//		FragmentNavDestination.AddDestination(e.NavigationStack.Last(), this, graph, FragmentNavigator);
+
+			//	NavHost.NavController.Navigate(destination.Id, null, navOptions);
+			//}
+			//else
+			//{
+			//	NavHost.NavController.NavigateUp();
+			//}
+		}
+
+		public virtual void Pop(object? arg3)
+		{
+			//var graph = (NavGraphDestination)NavHost.NavController.Graph;
+			//graph.ReShuffleDestinations(e.NavigationStack, e.Animated, this);
+		}
+
+		internal void OnPop()
+		{
+			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
+
+			var graph = (NavGraphDestination)NavHost.NavController.Graph;
+			var stack = new List<IView>(graph.NavigationStack);
+			stack.RemoveAt(stack.Count - 1);
+			graph.ReShuffleDestinations(stack, true, this);
+			NavigationView.NavigationFinished(graph.NavigationStack);
+
+			//NavigationView
+			//	.PopAsync()
+			//	.FireAndForget((e) =>
+			//	{
+			//		//Log.Warning(nameof(NavigationViewHandler), $"{e}");
+			//	});
+		}
+
+		public void OnDestinationChanged(NavController p0, NavDestination p1, Bundle p2)
+		{
+		}
+
 
 
 		class FragmentLifecycleCallback : AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks
@@ -171,7 +197,7 @@ namespace Microsoft.Maui
 			}
 
 			public override void OnFragmentViewDestroyed(
-				AndroidX.Fragment.App.FragmentManager fm, 
+				AndroidX.Fragment.App.FragmentManager fm,
 				AndroidX.Fragment.App.Fragment f)
 			{
 				if (f is NavHostPageFragment pf)
@@ -181,45 +207,5 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public virtual void Push(MauiNavigationRequestedEventArgs e)
-		{
-			var destination =
-				MauiFragmentNavDestination.AddDestination(e.Page, this, NavHost.NavController.Graph, FragmentNavigator);
-
-			NavOptions? navOptions = null;
-
-			if (e.Animated)
-			{
-				new NavOptions.Builder()
-					 .SetEnterAnim(Resource.Animation.enterfromright)
-					 .SetExitAnim(Resource.Animation.exittoleft)
-					 .SetPopEnterAnim(Resource.Animation.enterfromleft)
-					 .SetPopExitAnim(Resource.Animation.exittoright)
-					 .Build();
-			}
-
-			NavHost.NavController.Navigate(destination.Id, null, navOptions);
-		}
-
-		public virtual void Pop(object? arg3)
-		{
-			NavHost.NavController.NavigateUp();
-		}
-
-		internal void OnPop()
-		{
-			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
-
-			NavigationView
-				.PopAsync()
-				.FireAndForget((e) =>
-				{
-					//Log.Warning(nameof(NavigationPageHandler), $"{e}");
-				});
-		}
-
-		public void OnDestinationChanged(NavController p0, NavDestination p1, Bundle p2)
-		{
-		}
 	}
 }

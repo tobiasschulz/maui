@@ -16,16 +16,26 @@ namespace Microsoft.Maui.Controls
 		{
 			PushRequested += (_, args) =>
 			{
-				//List<IView> newStack = new List<IView>();
-				//var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
-				//Handler?.Invoke(nameof(INavigationView.PushAsync), request);
+				List<IView> newStack = new List<IView>((this as INavigationView).NavigationStack);
+				var request = new MauiNavigationRequestedEventArgs(newStack, args.Animated);
+				Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
 
 			};
 
 			PopRequested += (_, args) =>
 			{
-				//var request = new MauiNavigationRequestedEventArgs(args.Page, args.Animated);
-				//Handler?.Invoke(nameof(INavigationView.PopAsync), request);
+				List<IView> newStack = new List<IView>((this as INavigationView).NavigationStack);
+				newStack.Remove(args.Page);
+				var request = new MauiNavigationRequestedEventArgs(newStack, args.Animated);
+				Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
+			};
+
+			RemovePageRequested += (_, args) =>
+			{
+				List<IView> newStack = new List<IView>((this as INavigationView).NavigationStack);
+				newStack.Remove(args.Page);
+				var request = new MauiNavigationRequestedEventArgs(newStack, args.Animated);
+				Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
 			};
 		}
 
@@ -51,14 +61,31 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
-		void INavigationView.NavigationFinished()
-		{
-			throw new NotImplementedException();
-		}
+		//void INavigationView.NavigationFinished()
+		//{
+		//	throw new NotImplementedException();
+		//}
 
 		void INavigationView.RequestNavigation(MauiNavigationRequestedEventArgs eventArgs)
 		{
-			throw new NotImplementedException();
+			Handler?.Invoke(nameof(INavigationView.RequestNavigation), eventArgs);
+		}
+
+		void INavigationView.NavigationFinished(IReadOnlyList<IView> newStack)
+		{
+			// TODO MAUI Create sync version of this since there's no animation
+			RemoveAsyncInner(CurrentPage, false, true, true)
+					.FireAndForget((e) =>
+				{
+					//Log.Warning(nameof(NavigationViewHandler), $"{e}");
+				});
+
+			// TODO MAUI calculate this out better
+			//PopAsync()
+			//	.FireAndForget((e) =>
+			//	{
+			//		//Log.Warning(nameof(NavigationViewHandler), $"{e}");
+			//	});
 		}
 
 		//void INavigationView.InsertPageBefore(IView page, IView before)

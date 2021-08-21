@@ -341,33 +341,33 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateToolbar();
 		}
 
-		TaskCompletionSource<bool> _taskCompletionSource;
-		public override void Push(MauiNavigationRequestedEventArgs e)
-		{
-			UpdateToolbar();
+		//TaskCompletionSource<bool> _taskCompletionSource;
+		//public override void Push(MauiNavigationRequestedEventArgs e)
+		//{
+		//	UpdateToolbar();
 
-			if (e.Animated && _drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton((Page)e.Page))
-				AnimateArrowIn();
-
-
-			_taskCompletionSource = new TaskCompletionSource<bool>();
-			base.Push(e);
-		}
-
-		public override void Pop(object arg3)
-		{
-			if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(_current))
-				AnimateArrowOut();
-
-			_taskCompletionSource = new TaskCompletionSource<bool>();
-			base.Pop(arg3);
-		}
+		//	if (e.Animated && _drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton((Page)e.Page))
+		//		AnimateArrowIn();
 
 
-		internal override void OnPageFragmentDestroyed(FragmentManager fm, NavHostPageFragment navHostPageFragment)
-		{
-			_taskCompletionSource = null;
-		}
+		//	_taskCompletionSource = new TaskCompletionSource<bool>();
+		//	base.Push(e);
+		//}
+
+		//public override void Pop(object arg3)
+		//{
+		//	if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(_current))
+		//		AnimateArrowOut();
+
+		//	_taskCompletionSource = new TaskCompletionSource<bool>();
+		//	base.Pop(arg3);
+		//}
+
+
+		//internal override void OnPageFragmentDestroyed(FragmentManager fm, NavHostPageFragment navHostPageFragment)
+		//{
+		//	_taskCompletionSource = null;
+		//}
 
 		internal override void OnFragmentResumed(FragmentManager fm, NavHostPageFragment navHostPageFragment)
 		{

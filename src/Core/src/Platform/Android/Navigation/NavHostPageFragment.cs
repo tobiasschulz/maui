@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 		NavigationLayout? _navigationLayout;
 		NavigationLayout NavigationLayout => _navigationLayout ??= NavDestination.NavigationLayout;
 
-		MauiFragmentNavDestination? _navDestination;
+		FragmentNavDestination? _navDestination;
 
 		ProcessBackClick BackClick { get; }
 
@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
 			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
 
-		public MauiFragmentNavDestination NavDestination
+		public FragmentNavDestination NavDestination
 		{
 			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here");
 			private set => _navDestination = value;
@@ -51,13 +51,16 @@ namespace Microsoft.Maui
 			if (_navDestination == null)
 			{
 				NavDestination =
-					(MauiFragmentNavDestination)
+					(FragmentNavDestination)
 						NavHost.NavController.CurrentDestination;
 			}
 
 			_ = NavDestination ?? throw new ArgumentNullException(nameof(NavDestination));
 
+			NavDestination.Page.Handler?.DisconnectHandler();
+			NavDestination.Page.Handler = null;
 			var view = NavDestination.Page.ToNative(NavDestination.MauiContext);
+			//view.RemoveFromParent();
 			return view;
 		}
 
@@ -91,7 +94,7 @@ namespace Microsoft.Maui
 				// TODO MAUI put this elsewhere once we figure out how attached property handlers work
 				bool showNavBar = true;
 				//if (NavDestination.Page is BindableObject bo)
-				//	showNavBar = NavigationPage.GetHasNavigationBar(bo);
+				//	showNavBar = NavigationView.GetHasNavigationBar(bo);
 
 				var appBar = NavDestination.NavigationLayout.AppBar;
 				if (!showNavBar)
@@ -134,7 +137,13 @@ namespace Microsoft.Maui
 			}
 
 		}
-		
+
+		public override void OnResume()
+		{
+			base.OnResume();
+		}
+
+
 		public override void OnDestroyView()
 		{			
 			_navigationLayout = null;

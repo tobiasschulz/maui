@@ -12,7 +12,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationPageHandler :
+	internal partial class NavigationViewHandler :
 		ViewHandler<INavigationView, NavigationLayout>
 	{
 		protected override NavigationLayout CreateNativeView()
@@ -33,26 +33,21 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Connect();
 		}
 
-		static void PushAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
 			if (arg3 is MauiNavigationRequestedEventArgs ea)
-				arg1.NativeView.Push(ea);
-		}
-
-		static void PopAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
-		{
-			arg1.NativeView.Pop(arg3);
+				arg1.NativeView.RequestNavigation(ea);
 		}
 
 		internal void OnPop()
 		{
-			NativeView
-				.NavigationView?
-				.PopAsync()
-				.FireAndForget((e) =>
-				{
-					//Log.Warning(nameof(NavigationPageHandler), $"{e}");
-				});
+			//NativeView
+			//	.NavigationView?
+			//	.PopAsync()
+			//	.FireAndForget((e) =>
+			//	{
+			//		//Log.Warning(nameof(NavigationViewHandler), $"{e}");
+			//	});
 		}
 	}
 }

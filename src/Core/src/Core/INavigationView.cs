@@ -9,6 +9,6 @@ namespace Microsoft.Maui
 	{
 		IReadOnlyList<IView> NavigationStack { get; }
 		void RequestNavigation(MauiNavigationRequestedEventArgs eventArgs);
-		void NavigationFinished();
+		void NavigationFinished(IReadOnlyList<IView> newStack);
 	}
 }

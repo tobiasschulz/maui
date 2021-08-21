@@ -7,7 +7,7 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Controls.Handlers
 {
 	// Currently only inheriting because we can't tap into CreateNativeView
-	internal partial class NavigationPageHandler : Microsoft.Maui.Handlers.NavigationPageHandler
+	internal partial class NavigationPageHandler : Microsoft.Maui.Handlers.NavigationViewHandler
 	{
 		public new NavigationPageView NativeView =>
 			(NavigationPageView)base.NativeView;
