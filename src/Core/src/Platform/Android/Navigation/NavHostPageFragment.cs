@@ -57,6 +57,8 @@ namespace Microsoft.Maui
 
 			_ = NavDestination ?? throw new ArgumentNullException(nameof(NavDestination));
 
+			// TODO Maui can we tranplant the page better?
+			// do we care?
 			NavDestination.Page.Handler?.DisconnectHandler();
 			NavDestination.Page.Handler = null;
 			var view = NavDestination.Page.ToNative(NavDestination.MauiContext);
@@ -67,6 +69,8 @@ namespace Microsoft.Maui
 		public override void OnViewCreated(AView view, Bundle savedInstanceState)
 		{
 			base.OnViewCreated(view, savedInstanceState);
+
+			Console.WriteLine($"OnViewCreated {(NavDestination.Page as ITitledElement)?.Title}");
 
 			var controller = NavHostFragment.FindNavController(this);
 			var appbarConfig =

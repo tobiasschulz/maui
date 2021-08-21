@@ -54,15 +54,18 @@ namespace Microsoft.Maui
 			var fragmentNavDestinations = new List<FragmentNavDestination>();
 			var bsEntry = new List<NavBackStackEntry>();
 
+			Console.WriteLine($"Output Stack start");
 			while (iterator.HasNext)
 			{
 				if (iterator.Next() is NavBackStackEntry nbse &&
 					nbse.Destination is FragmentNavDestination nvd)
 				{
+					Console.WriteLine($"In Stack {(nvd.Page as ITitledElement)?.Title}");
 					fragmentNavDestinations.Add(nvd);
 					bsEntry.Add(nbse);
 				}
 			}
+			Console.WriteLine($"Output Stack end");
 
 			Pages.Clear();
 			if (pages.Count > NavigationStack.Count)
@@ -121,30 +124,34 @@ namespace Microsoft.Maui
 						lastFrag.Page = lastPage;
 
 					Console.Write($"lastFrag ID: {lastFrag.Id}");
-					Console.Write($"PopToID: {popToId}");
 
 					bool inclusive = false;
 					if (popToId == 0)
 					{
 						popToId = fragmentNavDestinations[0].Id;
-						inclusive = true;
+						Console.Write($"PopToID: {popToId}");
+						navOptions = new NavOptions.Builder()
+							 //.SetEnterAnim(Resource.Animation.enterfromright)
+							 //.SetExitAnim(Resource.Animation.exittoleft)
+							 //.SetPopEnterAnim(Resource.Animation.enterfromleft)
+							 //.SetPopExitAnim(Resource.Animation.exittoright)
+							 .SetPopUpTo(popToId, true)
+							 .Build();
+
+						this.StartDestination = lastFrag.Id;
+						var actionId = Android.Views.View.GenerateViewId();
+						lastFrag.PutAction(actionId, new NavAction(lastFrag.Id, navOptions));
+						Console.WriteLine($"Inclusive Push to {(lastFrag.Page as ITitledElement)?.Title}");
+						navController.Navigate(actionId);
+					}
+					else
+					{
+						Console.Write($"PopToID: {popToId}");
+						Console.WriteLine($"{navController.PopBackStack(popToId, inclusive)}");
+						navController.Navigate(lastFrag.Id);
 					}
 
-					navOptions = new NavOptions.Builder()
-					 //.SetEnterAnim(Resource.Animation.enterfromright)
-					 //.SetExitAnim(Resource.Animation.exittoleft)
-					 //.SetPopEnterAnim(Resource.Animation.enterfromleft)
-					 //.SetPopExitAnim(Resource.Animation.exittoright)
-					 .SetPopUpTo(popToId, inclusive)
-					 .Build();
-
-					//navController.PopBackStack(873242189)
-
-					//bsEntry[0].max
-					Console.WriteLine($"{navController.PopBackStack(popToId, inclusive)}");
-					//var actionId = Android.Views.View.GenerateViewId();
-					//lastFrag.PutAction(actionId, new NavAction(lastFrag.Id, navOptions));
-					navController.Navigate(lastFrag.Id);
+					
 
 
 					foreach(var thing in fragmentNavDestinations)
@@ -152,6 +159,8 @@ namespace Microsoft.Maui
 						if (!Pages.Values.ToList().Contains(thing.Id))
 						{
 							this.Remove(thing);
+
+							Console.WriteLine($"Removing Destination {(thing.Page as ITitledElement)?.Title}");
 						}
 					}
 				}
