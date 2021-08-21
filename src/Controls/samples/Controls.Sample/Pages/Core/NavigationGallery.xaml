@@ -12,6 +12,7 @@
             <Button Text="Pop Page"  Clicked="PopPage" />
             <Button Text="Push Page"  Clicked="PushPage" />
             <Button Text="Remove Page"  Clicked="RemovePage" />
+            <Button Text="Pop To Root"  Clicked="PopToRoot" />
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>

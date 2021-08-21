@@ -34,6 +34,11 @@ namespace Maui.Controls.Sample.Pages
 			await Navigation.PushAsync(new NavigationGallery(), true);
 		}
 
+		async void PopToRoot(object sender, EventArgs e)
+		{
+			await Navigation.PopToRootAsync(true);
+		}
+
 		void RemovePage(object sender, EventArgs e)
 		{
 			if (Navigation.NavigationStack.Count >= 2)

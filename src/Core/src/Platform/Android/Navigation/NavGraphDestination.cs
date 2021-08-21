@@ -13,15 +13,12 @@ namespace Microsoft.Maui
 	public class NavGraphDestination : NavGraph
 	{
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
-
 		public Dictionary<IView, int> Pages = new Dictionary<IView, int>();
 
 		public NavGraphDestination(Navigator navGraphNavigator) : base(navGraphNavigator)
 		{
 			Id = global::Android.Views.View.GenerateViewId();
 		}
-
-
 
 		// all of this weirdness is because AFAICT you can't remove things from the navigation stack
 		public void ReShuffleDestinations(
@@ -33,22 +30,18 @@ namespace Microsoft.Maui
 
 			// this means the currently visible page hasn't changed so don't do anything
 			// TODO MAUI test remove page on root
-			//if (pages[pages.Count - 1] == NavigationStack[NavigationStack.Count - 1])
-			//{
-			//	NavigationStack = new List<IView>(pages);
-			//	return;
-			//}
+			// If they've removed all the pages except one then we process the navigation
+			// to update the app bar
+			if (pages[pages.Count - 1] == NavigationStack[NavigationStack.Count - 1] &&
+				pages.Count > 1 &&
+				NavigationStack.Count > 1)
+			{
+				NavigationStack = new List<IView>(pages);
+				return;
+			}
 
 			NavOptions? navOptions = null;
-			if (animated)
-			{
-				navOptions = new NavOptions.Builder()
-					 .SetEnterAnim(Resource.Animation.enterfromright)
-					 .SetExitAnim(Resource.Animation.exittoleft)
-					 .SetPopEnterAnim(Resource.Animation.enterfromleft)
-					 .SetPopExitAnim(Resource.Animation.exittoright)
-					 .Build();
-			}
+			
 
 			var iterator = navigationLayout.NavHost.NavController.BackStack.Iterator();
 			var fragmentNavDestinations = new List<FragmentNavDestination>();
@@ -65,11 +58,37 @@ namespace Microsoft.Maui
 					bsEntry.Add(nbse);
 				}
 			}
+
 			Console.WriteLine($"Output Stack end");
 
 			Pages.Clear();
-			if (pages.Count > NavigationStack.Count)
+			bool isPop = pages.Count < NavigationStack.Count;
+
+			if (fragmentNavDestinations.Count < pages.Count)
 			{
+				if (animated)
+				{
+					// natively we're doing the opposite
+					if (isPop)
+					{
+						navOptions = new NavOptions.Builder()
+							 .SetPopEnterAnim(Resource.Animation.enterfromright)
+							 .SetPopExitAnim(Resource.Animation.exittoleft)
+							 .SetEnterAnim(Resource.Animation.enterfromleft)
+							 .SetExitAnim(Resource.Animation.exittoright)
+							 .Build();
+					}
+					else
+					{
+						navOptions = new NavOptions.Builder()
+								.SetEnterAnim(Resource.Animation.enterfromright)
+								.SetExitAnim(Resource.Animation.exittoleft)
+								.SetPopEnterAnim(Resource.Animation.enterfromleft)
+								.SetPopExitAnim(Resource.Animation.exittoright)
+								.Build();
+					}
+				}
+
 				for (int i = 0; i < pages.Count; i++)
 				{
 					// TODO cleanup into method
@@ -84,8 +103,6 @@ namespace Microsoft.Maui
 
 						if (i < (pages.Count - 1))
 						{
-							//NavAction navAction = new NavAction(dest.Id, navOptions);
-							//dest.PutAction(global::Android.Views.View.GenerateViewId(), navAction);
 							navController.Navigate(dest.Id);
 						}
 						else
@@ -95,132 +112,140 @@ namespace Microsoft.Maui
 					}
 				}
 			}
-			else
+			// user is popping to root
+			else if (pages.Count == 1)
 			{
-				if (pages.Count > 0 &&
-					pages[pages.Count - 1] == NavigationStack[NavigationStack.Count - 1])
+				// TODO MAUI work with cleaning up fragments before actually firing navigation
+				Pages.Add(pages[0], fragmentNavDestinations[0].Id);
+				fragmentNavDestinations[0].Page = pages[0];
+
+				//navOptions = new NavOptions.Builder()
+				//				.SetEnterAnim(Resource.Animation.enterfromright)
+				//				.SetExitAnim(Resource.Animation.exittoleft)
+				//				.SetPopEnterAnim(Resource.Animation.enterfromleft)
+				//				.SetPopExitAnim(Resource.Animation.exittoright)
+				//				.SetPopUpTo(fragmentNavDestinations[0].Id, false)
+				//				.Build();
+
+				navController.PopBackStack(fragmentNavDestinations[0].Id, false);
+				// navController.Navigate(fragmentNavDestinations[0].Id, null, navOptions);
+			}
+			else if (pages[pages.Count - 1] == NavigationStack[NavigationStack.Count - 1])
+			{
+				int popToId = 0;
+				for (int i = 0; i < pages.Count - 1; i++)
 				{
-					int popToId = 0;
-					for (int i = 0; i < pages.Count - 1; i++)
-					{
-						Pages.Add(pages[i], fragmentNavDestinations[i].Id);
+					Pages.Add(pages[i], fragmentNavDestinations[i].Id);
 
-						if (fragmentNavDestinations[i].Page != pages[i])
-							fragmentNavDestinations[i].Page = pages[i];
+					if (fragmentNavDestinations[i].Page != pages[i])
+						fragmentNavDestinations[i].Page = pages[i];
 
-						popToId = fragmentNavDestinations[i].Id;
-					}
+					popToId = fragmentNavDestinations[i].Id;
+				}
 
-					// last page on the stack
-					var lastPage = pages.Last();
+				// last page on the stack
+				var lastPage = pages.Last();
 
-					// last fragment on the stack
-					var lastFrag = fragmentNavDestinations.Last();
+				// last fragment on the stack
+				var lastFrag = fragmentNavDestinations.Last();
 
 
-					Pages.Add(lastPage, lastFrag.Id);
+				Pages.Add(lastPage, lastFrag.Id);
 
-					if (lastFrag.Page != lastPage)
-						lastFrag.Page = lastPage;
+				if (lastFrag.Page != lastPage)
+					lastFrag.Page = lastPage;
 
-					Console.Write($"lastFrag ID: {lastFrag.Id}");
+				Console.Write($"lastFrag ID: {lastFrag.Id}");
 
-					bool inclusive = false;
-					if (popToId == 0)
-					{
-						popToId = fragmentNavDestinations[0].Id;
-						Console.Write($"PopToID: {popToId}");
-						navOptions = new NavOptions.Builder()
-							 //.SetEnterAnim(Resource.Animation.enterfromright)
-							 //.SetExitAnim(Resource.Animation.exittoleft)
-							 //.SetPopEnterAnim(Resource.Animation.enterfromleft)
-							 //.SetPopExitAnim(Resource.Animation.exittoright)
-							 .SetPopUpTo(popToId, true)
-							 .Build();
+				bool inclusive = false;
+				if (popToId == 0)
+				{
+					popToId = fragmentNavDestinations[0].Id;
+					Console.Write($"PopToID: {popToId}");
+					navOptions = new NavOptions.Builder()
+							.SetPopUpTo(popToId, true)
+							.Build();
 
-						this.StartDestination = lastFrag.Id;
-						var actionId = Android.Views.View.GenerateViewId();
-						lastFrag.PutAction(actionId, new NavAction(lastFrag.Id, navOptions));
-						Console.WriteLine($"Inclusive Push to {(lastFrag.Page as ITitledElement)?.Title}");
-						navController.Navigate(actionId);
-					}
-					else
-					{
-						Console.Write($"PopToID: {popToId}");
-						Console.WriteLine($"{navController.PopBackStack(popToId, inclusive)}");
-						navController.Navigate(lastFrag.Id);
-					}
-
-					
-
-
-					foreach(var thing in fragmentNavDestinations)
-					{
-						if (!Pages.Values.ToList().Contains(thing.Id))
-						{
-							this.Remove(thing);
-
-							Console.WriteLine($"Removing Destination {(thing.Page as ITitledElement)?.Title}");
-						}
-					}
+					this.StartDestination = lastFrag.Id;
+					var actionId = Android.Views.View.GenerateViewId();
+					lastFrag.PutAction(actionId, new NavAction(lastFrag.Id, navOptions));
+					Console.WriteLine($"Inclusive Push to {(lastFrag.Page as ITitledElement)?.Title}");
+					navController.Navigate(actionId);
 				}
 				else
 				{
-					navController.PopBackStack();
+					Console.Write($"PopToID: {popToId}");
+					Console.WriteLine($"{navController.PopBackStack(popToId, inclusive)}");
+					navController.Navigate(lastFrag.Id);
+				}
+			}
+			else if (pages.Count == fragmentNavDestinations.Count)
+			{
+				int popToId = fragmentNavDestinations[fragmentNavDestinations.Count - 2].Id;
+				for (int i = 0; i < pages.Count; i++)
+				{
+					Pages.Add(pages[i], fragmentNavDestinations[i].Id);
+
+					if (fragmentNavDestinations[i].Page != pages[i])
+						fragmentNavDestinations[i].Page = pages[i];
+				}
+
+				// last page on the stack
+				var lastPage = pages.Last();
+
+				// last fragment on the stack
+				var lastFrag = fragmentNavDestinations.Last();
+
+				if (lastFrag.Page != lastPage)
+					lastFrag.Page = lastPage;
+
+				Console.Write($"lastFrag ID: {lastFrag.Id}");
+				Console.Write($"PopToID: {popToId}");
+				Console.WriteLine($"{navController.PopBackStack(popToId, false)}");
+				navController.Navigate(lastFrag.Id);
+			}
+			else
+			{
+				int popToId = 0;
+				for (int i = 0; i < pages.Count; i++)
+				{
+					Pages.Add(pages[i], fragmentNavDestinations[i].Id);
+
+					if (fragmentNavDestinations[i].Page != pages[i])
+						fragmentNavDestinations[i].Page = pages[i];
+
+					popToId = fragmentNavDestinations[i].Id;
+				}
+
+				// last page on the stack
+				var lastPage = pages.Last();
+
+				// last fragment on the stack
+				var lastFrag = fragmentNavDestinations.Last();
+				navOptions = new NavOptions.Builder()
+								.SetEnterAnim(Resource.Animation.enterfromright)
+								.SetExitAnim(Resource.Animation.exittoleft)
+								.SetPopEnterAnim(Resource.Animation.enterfromleft)
+								.SetPopExitAnim(Resource.Animation.exittoright)
+								.SetPopUpTo(popToId, false)
+								.Build();
+
+				Console.Write($"PopToID: {popToId}");
+				//Console.WriteLine($"{navController.PopBackStack(popToId, false)}");
+				navController.Navigate(popToId, null, navOptions);
+			}
+
+
+			foreach (var thing in fragmentNavDestinations)
+			{
+				if (!Pages.Values.ToList().Contains(thing.Id))
+				{
+					this.Remove(thing);
+					Console.WriteLine($"Removing Destination {(thing.Page as ITitledElement)?.Title}");
 				}
 			}
 
-			//for (var i = NativeNavigationStackCount; i < pages.Count; i++)
-			//{
-			//	var dest = destinations[i];
-			//	navController.Navigate(dest);
-			//}
-
 			NavigationStack = new List<IView>(pages);
-
-			//Pages.Clear();
-
-			//// push operation / right now we interpret matching stack counts as a push
-			//// at some later point users can customize animations and adjust it themselves
-			//if (pages.Count >= NavigationStack.Count)
-			//{
-			//	// We just make what we can match up
-			//	int pageCount = pages.Count;
-			//	for (int i = fragmentNavDestinations.Count - 1; i >= 0 && pageCount >= 0; i--)
-			//	{
-			//		// TODO cleanup into method
-			//		Pages.Add(pages[pageCount], fragmentNavDestinations[i].Id);
-			//		fragmentNavDestinations[i].Page = pages[pageCount];
-			//	}
-
-			//	NavigationStack = new List<IView>(pages);
-
-			//	var destination =
-			//		AddDestination(NavigationStack.Last(), navigationLayout);
-
-			//	navigationLayout.NavHost.NavController.Navigate(destination.Id, null, navOptions);
-			//}
-			//else
-			//{
-			//	int pageCount = pages.Count;
-			//	for (int i = fragmentNavDestinations.Count - 2; i >= 0 && pageCount >= 0; i--)
-			//	{
-			//		// TODO cleanup into method
-			//		Pages.Add(pages[pageCount], fragmentNavDestinations[i].Id);
-			//		fragmentNavDestinations[i].Page = pages[pageCount];
-			//	}
-			//}
-
-
-			//// TODO MORE COMMENTS
-			////Pages.Add(pages[0], fragmentNavDestinations[0].Id);
-
-			//if (fragmentNavDestinations.Count > pages.Count)
-			//{
-
-			//}
-
-			// ensure that the root of the stack has an element
 		}
 
 		public FragmentNavDestination AddDestination(

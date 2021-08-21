@@ -37,6 +37,24 @@ namespace Microsoft.Maui.Controls
 				var request = new MauiNavigationRequestedEventArgs(newStack, args.Animated);
 				Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
 			};
+
+			_insertPageBeforeRequested += (_, args) =>
+			{
+				// TODO MAUI why is this the only one where the stack insert is delayed?
+				Device.BeginInvokeOnMainThread(() =>
+				{
+					List<IView> newStack = new List<IView>((this as INavigationView).NavigationStack);
+					var request = new MauiNavigationRequestedEventArgs(newStack, args.Animated);
+					Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
+				});
+			};
+
+			PopToRootRequested += (_, args) =>
+			{
+				List<IView> newStack = new List<IView>((this as INavigationView).NavigationStack);
+				var request = new MauiNavigationRequestedEventArgs(newStack, args.Animated);
+				Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
+			};
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
